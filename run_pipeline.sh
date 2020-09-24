@@ -1,75 +1,70 @@
 #!/bin/bash
 
-# Get commandline options and arguments and initialize the starting variables  
-cores=all
-new_Genome_Graph=false
-while getopts ":n:g:h" opt; do
-  case $opt in
-    # Help function showing the usage and possible options
-    h)
-      echo -e "Usage:\n"
-      echo -e "\$ run_pipeline.sh [options] Proteins.fa Transcripts.fa Annotation.bed Genome.gtf ProteinCoding.fa\n\n"
-      echo -e "Options:\n"
-      echo -e "-n \t\t set the number of cores to be used in the snakemake step (Default = all)"
-      echo -e "-g Genome.fa \t Create a new Graph file using the provided Genome fasta"
-      ;;
-    # The option -n sets the number of cores for the snakemake step
-    # and will only accept integers as arguments. Defaults to all. 
-    n)
-      re='^[0-9]+$'
-	if ! [[ $OPTARG =~ $re ]] ; then
-  	  echo "Error: Argument of -$opt is not a number" >&2; exit 1
-	else
-	  cores=$OPTARG
-	fi
-      #echo "Numbber of cores was set to $cores" >&2
-      ;;
-    # The option -g will add the creation of a new genome graph file using the provided genome fasta
-    g)
-      if [[ $OPTARG == *.fa || $OPTARG == *.fasta ]]
-      then
-      	echo "A new graph file will be created using $OPTARG"
-      	Genome=$OPTARG
-      	new_Genome_Graph=true
-      else
-      	echo "$OPTARG provided to generate graph seems to be in the wrong format."
-      fi
-      ;;
-    :)
-      echo "Error: Option -$OPTARG needs Argument" >&2; exit 1
-      ;;
-    \?)
-      echo "Error: Invalid option: -$OPTARG. Use -h flag for help." >&2; exit 1
-      ;;
+#Help message:
+usage="
+[Usage]: ./run_pipeline.sh [-h] proteins.fa transcripts.fa annotation.bed proteincodingtranscripts.fa
+
+proteins.fa 			should be a multi fasta file containing the amino acid sequences of the proteins that are used as reference (whole transcriptome).
+transcripts.fa 			should be a multi fasta file containing the DNA sequences of the reads/transcripts that shall be analyzed.
+annotation.bed 			should be a bedfile containing the annotations for the used genome build.
+				The standard annotation files for human and mouse (ENSEMBL 95) can be found in the annotations directory in the SplitORF directory.
+proteinCodingTranscripts.fa 	should be a multi fasta file containing the DNA sequences of the protein coding transcripts that are used as reference.
+
+where:
+-h	show this help"
+
+#available options for the programm
+while getopts ':h' option; do
+  case "$option" in
+    h) echo "$usage"
+       exit
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
   esac
 done
-echo "Number of cores was set to $cores" >&2
-shift $((OPTIND -1))
 
-if ! [[ $# == 5 ]]
-then
-	echo "Invalid set of Arguments. Use -h flag for help" >&2; exit 1
+#Check that all arguments are provided and are in the correct file format. Give error messages according to errors in the call and exit the programm if something goes wrong
+RED='\033[0;31m' #Red colour for error messages
+NC='\033[0m'	 #No colour for normal messages
+
+#check for right number of arguments
+if [ "$#" -ne 4 ]; then #check for right number of arguments
+  echo -e "${RED}
+ERROR while executing the Pipeline!
+Wrong number of arguments.${NC}"
+  echo "$usage" >&2
+  exit 1
+#check if any argument is a directory
+elif  [ -d "$1" ] || [ -d "$2" ] || [ -d "$3" ] || [ -d "$4" ]; then
+  echo -e "${RED}
+ERROR while executing the Pipeline!
+One or more of the arguments are directories.${NC}"
+  echo "$usage" >&2
+  exit 1
+#check if every argument has the correct file extension
+elif ! [[ $1 =~ \.fa$ ]] || ! [[ $2 =~ \.fa$ ]] || ! [[ $3 =~ \.bed$ ]] || ! [[ $4 =~ \.fa$ ]]; then
+  echo -e "${RED}
+ERROR while executing the Pipeline!
+One or more of the arguments are not in the specified file format.${NC}"
+  echo "$usage" >&2
+  exit 1
 fi
-for var in "$@"
-do
-    if [[ $var == *[_\.\;\:]*.* ]]
-    then
-    	echo "Please make sure that your filenames only use letters in their names" >&2; exit 1
-    fi
-done
 
-
-Proteins=$1
-Transcripts=$2
-Annotation=$3
-GenomeAnnotation=$4
-ProteinCoding=$5
+#Assign the given arguments
+proteins=$1
+transcripts=$2
+annotation=$3
+proteinCodingTranscripts=$4
 
 # create run specific output folder
-timestamp=$(date "+%Y.%m.%d-%H.%M.%S")
+timestamp=$(date "+%d.%m.%Y-%H.%M.%S")
 if [ -d "./Output/run_$timestamp" ]
 then 
-	echo "Directory ./Output/run_$timestamp already exists." >&2; exit 1
+	echo "Directory ./Output/run_$timestamp already exists." >&2
+	exit 1
 else
 	mkdir ./Output/run_$timestamp
 fi
@@ -77,69 +72,26 @@ fi
 #activate conda
 source $(conda info --base)/etc/profile.d/conda.sh
 
-#activate py2 environment in order to execute runSplitOrfs.sh
+#activate py2 environment in order to execute runSplitOrfs.sh (see runSplitOrfs.sh for more information)
 conda activate py2
 echo 'Run SplitORFs'
-source ./SplitOrfs-master/runSplitOrfs.sh ./Output/run_$timestamp $Proteins $Transcripts $Annotation
+source ./SplitOrfs-master/runSplitOrfs.sh ./Output/run_$timestamp $proteins $transcripts $annotation
+#activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py --> Dependency BioSeqIO which needs python3
 conda activate py3_7
+#Select_SplitORF_Sequences.py takes the output of runSplitOrfs.sh and extracts the annotated sequences from the given transcripts.fa
 echo 'Select SplitORF Sequences'
-python ./Select_SplitORF_Sequences.py $Transcripts ./Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa 
+python ./Select_SplitORF_Sequences.py $transcripts ./Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa 
 
-# copy all input files necessary for Aeron to run into the Aeron/input folder
-echo 'Copy all input files necessary for Aeron to run into the Aeron/input folder'
-cp ./Output/run_/UniqueProteinORFPairsSequences.fa ./Aeron/input
-echo -e '#####                     (33%)\r\c'
-cp $GenomeAnnotation ./Aeron/input
-echo -e '#############             (66%)\r\c'
-cp $ProteinCoding ./Aeron/input
-echo -e '#######################   (100%)\'
+#Determine Unique DNA regions by calling mummer maxmatch with a minimum length of 20, annotating the matches (non unique regions) in a bedfile and using bedtools subtract to get the non matching regions
+#which are then annotated as the unique regions in another bedfile
+echo "Align ORF-transcripts(DNA) to protein coding transcripts with mummer -maxmatch"
+mummer -maxmatch $proteinCodingTranscripts ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa > ./Output/run_$timestamp/DNA_maxmatch.mums
+echo "Select the non matching regions as unique regions and save as bedfile"
+python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/DNA_maxmatch.mums ./Output/run_$timestamp/DNA_non_unique.bed $proteinCodingTranscripts ./Output/run_$timestamp/ProteinCodingTranscripts.bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
 
-# If the provided gfa for hg38 is not applicable for your pipeline set -g and a new grap file will be created
-if [ $new_Genome_Graph == true ]
-then
-	echo 'Copying Genome.fa to Aeron/input in order to create new graph file'
-	cp $Genome ./Aeron/input
-	GenomeBase="$(basename -- $Genome)"
-	GenomeAnnBase="$(basename -- $Genome)"
-	GenomeGraph="${GenomeBase%.*}""Graph.gfa"
-	echo 'Creating new Graphfile'
-	python ./Aeron/AeronScripts/GraphBuilder.py -e ./Aeron/input/$GenomeBase -g ./Aeron/input/$GenomeAnnBase -o ./Aeron/input/$GenomeGraph
-fi
-
-
-cd Aeron
-# activate the snakemake environment and run snakemake with all available cores --> set cores using "-n" if you do not want to use all available cores
-# make sure /usr/bin/python directs to a python3 executable
-conda activate snakemake
-snakemake --cores=3 #set via option
-conda deactivate
-cd ..
-
-cp ./Aeron/output/*.json ./Output/run_$timestamp
-# activate the py3_7 environment to run the python scripts for  unique regions --> dependencies need a python3 version < 3.8
-conda activate py3_7
-
-# delete linebreaks in fasta file of the transcripts for String comparison
-TranscriptsBase=$(basename -- $Transcripts)
-TranscriptsNoline="${TranscriptsBase%.*}""Nolinebreak.fa"
-awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' $Transcripts > ./Output/run_$timestamp/$TranscriptNoline
-
-python ./Uniqueness_scripts/Find_Unique_DNA_Regions.py ./Output/run_$timestamp/*.json ./Output/run_$timestamp/Unique_DNA_Regions.fa ./Output/run_$timestamp/$TranscriptsNoline $ProteinCoding ./Output/run_$timestamp/Unique_DNA_Regions.bed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Determine Unique Protein regions by calling mummer maxmatch with a minimum length of 10, annotating the matches (non unique regions) in a bedfile and using bedtools subtract to get the non matching regions
+#which are then annotated as the unique regions in another bedfile
+echo "Align ORF-transcripts(Protein) to protein coding transcripts mummer -maxmatch -l 10"
+mummer -maxmatch -l 10 ./Input/proteins.fa ./Output/run_$timestamp/ORFProteins.fa > ./Output/run_$timestamp/Proteins_maxmatch_l10.mums
+echo "Select the non matching regions as unique regions and save as bedfile"
+python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Maxmatch_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
