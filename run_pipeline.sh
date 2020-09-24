@@ -76,6 +76,7 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate py2
 echo 'Run SplitORFs'
 source ./SplitOrfs-master/runSplitOrfs.sh ./Output/run_$timestamp $proteins $transcripts $annotation
+R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('/Output/run_$timestamp/ValidProteinORFPairs.txt','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt')))"
 #activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py --> Dependency BioSeqIO which needs python3
 conda activate py3_7
 #Select_SplitORF_Sequences.py takes the output of runSplitOrfs.sh and extracts the annotated sequences from the given transcripts.fa
@@ -87,11 +88,15 @@ python ./Select_SplitORF_Sequences.py $transcripts ./Output/run_$timestamp/Uniqu
 echo "Align ORF-transcripts(DNA) to protein coding transcripts with mummer -maxmatch"
 mummer -maxmatch $proteinCodingTranscripts ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa > ./Output/run_$timestamp/DNA_maxmatch.mums
 echo "Select the non matching regions as unique regions and save as bedfile"
-python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/DNA_maxmatch.mums ./Output/run_$timestamp/DNA_non_unique.bed $proteinCodingTranscripts ./Output/run_$timestamp/ProteinCodingTranscripts.bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
+python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/DNA_maxmatch.mums ./Output/run_$timestamp/DNA_non_unique.bed ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa ./Output/run_$timestamp/UniqueProteinORFPairsSequences.bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
 
 #Determine Unique Protein regions by calling mummer maxmatch with a minimum length of 10, annotating the matches (non unique regions) in a bedfile and using bedtools subtract to get the non matching regions
 #which are then annotated as the unique regions in another bedfile
 echo "Align ORF-transcripts(Protein) to protein coding transcripts mummer -maxmatch -l 10"
-mummer -maxmatch -l 10 ./Input/proteins.fa ./Output/run_$timestamp/ORFProteins.fa > ./Output/run_$timestamp/Proteins_maxmatch_l10.mums
+mummer -maxmatch -l 10 $proteins ./Output/run_$timestamp/ORFProteins.fa > ./Output/run_$timestamp/Proteins_maxmatch_l10.mums
 echo "Select the non matching regions as unique regions and save as bedfile"
-python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Maxmatch_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
+python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Protein_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
+
+bedtools getfasta -fi ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa -fo ./Output/run_$timestamp/Unique_DNA_regions.fa -bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
+bedtools getfasta -fi ./Output/run_$timestamp/ORFProteins.fa -fo ./Output/run_$timestamp/Unique_Protein_regions.fa -bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
+R -e "rmarkdown::render('Extended_Pipeline.Rmd',output_file='./Output/run_$timestamp/Uniqueness_Report.html',params=list(args = c('/Output/run_$timestamp/Unique_DNA_Regions.fa','/Output/run_$timestamp/Unique_Protein_Regions.fa')))"
