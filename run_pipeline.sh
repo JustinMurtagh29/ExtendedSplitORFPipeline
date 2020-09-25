@@ -2,7 +2,7 @@
 
 #Help message:
 usage="
-[Usage]: ./run_pipeline.sh [-h] proteins.fa transcripts.fa annotation.bed proteincodingtranscripts.fa
+Usage: ./run_pipeline.sh [-h] proteins.fa transcripts.fa annotation.bed proteincodingtranscripts.fa
 
 proteins.fa 			should be a multi fasta file containing the amino acid sequences of the proteins that are used as reference (whole transcriptome).
 transcripts.fa 			should be a multi fasta file containing the DNA sequences of the reads/transcripts that shall be analyzed.
@@ -76,9 +76,13 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate py2
 echo 'Run SplitORFs'
 source ./SplitOrfs-master/runSplitOrfs.sh ./Output/run_$timestamp $proteins $transcripts $annotation
+
+#Create a report with basic statistics of the the pipeline results
 R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('/Output/run_$timestamp/ValidProteinORFPairs.txt','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt')))"
+
 #activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py --> Dependency BioSeqIO which needs python3
 conda activate py3_7
+
 #Select_SplitORF_Sequences.py takes the output of runSplitOrfs.sh and extracts the annotated sequences from the given transcripts.fa
 echo 'Select SplitORF Sequences'
 python ./Select_SplitORF_Sequences.py $transcripts ./Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa 
@@ -97,6 +101,9 @@ mummer -maxmatch -l 10 $proteins ./Output/run_$timestamp/ORFProteins.fa > ./Outp
 echo "Select the non matching regions as unique regions and save as bedfile"
 python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Protein_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
 
+#Use bedtools getfasta to extract the fasta sequences of the unique regions annotated in the produced bedfiles
 bedtools getfasta -fi ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa -fo ./Output/run_$timestamp/Unique_DNA_regions.fa -bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
 bedtools getfasta -fi ./Output/run_$timestamp/ORFProteins.fa -fo ./Output/run_$timestamp/Unique_Protein_regions.fa -bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
+
+#Create a report with basics statistics of the uniqueness scripts
 R -e "rmarkdown::render('Extended_Pipeline.Rmd',output_file='./Output/run_$timestamp/Uniqueness_Report.html',params=list(args = c('/Output/run_$timestamp/Unique_DNA_Regions.fa','/Output/run_$timestamp/Unique_Protein_Regions.fa')))"
