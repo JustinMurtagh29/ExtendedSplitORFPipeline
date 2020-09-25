@@ -14,7 +14,7 @@ In order for the pipeline to work correctly you need:
 5) *Biopython* (version 1.77 or higher) Used to read in fasta files into python. The latest version can be downloaded [here](https://biopython.org/wiki/Download.)
 6) *pybedtools* (version 0.8.1 or higher). Needed for uniqueness determination.
 7) *MUMmer* (version 3.23). Needed for exact matching of the predicted ORF sequences against the reference files. The latest version can be downloaded [here](http://mummer.sourceforge.net/)
-8) *R with Rmarkdown* (R version 3.6). Used to create end reports for both the Split-ORF pipeline and the extended pipeline.
+8) *R with Rmarkdown* (R version 3.6). Used to create end reports for both the Split-ORF pipeline and the extended pipeline. For more information see [here] (https://www.r-project.org/)
 
 
 Blast, bedtools and mummer should be added to the unix PATH variable
