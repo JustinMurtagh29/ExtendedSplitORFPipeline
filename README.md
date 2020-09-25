@@ -17,7 +17,8 @@ In order for the pipeline to work correctly you need:
 8) *R with Rmarkdown* (R version 3.6). Used to create end reports for both the Split-ORF pipeline and the extended pipeline. For more information see [here](https://www.r-project.org/)
 
 
-Blast, bedtools and mummer should be added to the unix PATH variable
+Blast, bedtools and mummer should be added to the unix PATH variable.
+
 Biopython and pybedtools only need to be available in the py3_7 environment.
 
 ## Usage
