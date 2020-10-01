@@ -59,6 +59,8 @@ transcripts=$2
 annotation=$3
 proteinCodingTranscripts=$4
 
+[ -d "./Output" ] && echo "Directory ./Output exists." || echo "Directory ./Output does not exist, creating ..." && mkdir ./Output && echo "Directory ./Output created."
+
 # create run specific output folder
 timestamp=$(date "+%d.%m.%Y-%H.%M.%S")
 if [ -d "./Output/run_$timestamp" ]

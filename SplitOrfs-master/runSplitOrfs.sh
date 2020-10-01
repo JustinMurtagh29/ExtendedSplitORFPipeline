@@ -17,7 +17,7 @@ else
 	#create output folder if it does not exist
 	mkdir -p $output
 	#create Orf sequences
-	python OrfFinder.py ${transcripts} > ${output}/OrfProteins.fa
+	python ./SplitOrfs-master/OrfFinder.py ${transcripts} > ${output}/OrfProteins.fa
 	makeblastdb -in ${proteins} -out ${output}/ProteinDatabase -dbtype prot
 
 	#use BlastP to align the translated ORFs to the proteins (currently using 20 threads, change -num_threads otherwise
@@ -31,13 +31,13 @@ else
 	#rm ${output}/OrfsAlign.txt
 
 	#run the detection script to parse
-	python DetectValidSplitOrfMatches.py ${output}/OrfsAlign_sorted.txt > ${output}/ValidProteinORFPairs.txt
+	python ./SplitOrfs-master/DetectValidSplitOrfMatches.py ${output}/OrfsAlign_sorted.txt > ${output}/ValidProteinORFPairs.txt
 
 	#sort file per Orf-transcript ID on column 3. Here it is important to omit the head while sorting
 	cat ${output}/ValidProteinORFPairs.txt | awk 'NR<2{print ;next}{print | "sort -k3"}'  > ${output}/ValidProteinORFPairs_sortCol3.txt
-	python getLongestOrfMatches.py ${output}/ValidProteinORFPairs_sortCol3.txt > ${output}/UniqueProteinORFPairs.txt
+	python ./SplitOrfs-master/getLongestOrfMatches.py ${output}/ValidProteinORFPairs_sortCol3.txt > ${output}/UniqueProteinORFPairs.txt
 
-	python makeBed.py ${output}/UniqueProteinORFPairs.txt > ${output}/UniqueProteinMatches.bed
+	python ./SplitOrfs-master/makeBed.py ${output}/UniqueProteinORFPairs.txt > ${output}/UniqueProteinMatches.bed
 
 fi
 
@@ -50,6 +50,6 @@ if [[ "$#" -eq 4 ]]; then
 
 		# Each ORF match has to overlap  by 100% of one annotated entry to be considered by bedtools
 		bedtools intersect -a ${output}/UniqueProteinMatches.bed -b ${annotations} -wa -F 1  -wb > ${output}/intersectResults.txt
-		python addFunctionalOverlap.py ${output}/UniqueProteinORFPairs.txt ${output}/intersectResults.txt > ${output}/UniqueProteinORFPairs_annotated.txt
+		python ./SplitOrfs-master/addFunctionalOverlap.py ${output}/UniqueProteinORFPairs.txt ${output}/intersectResults.txt > ${output}/UniqueProteinORFPairs_annotated.txt
 
 fi	
