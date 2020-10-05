@@ -103,9 +103,18 @@ mummer -maxmatch -l 10 $proteins ./Output/run_$timestamp/ORFProteins.fa > ./Outp
 echo "Select the non matching regions as unique regions and save as bedfile"
 python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Protein_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
 
+#Merge the bedfile entries if the start and end positions for the smae transcript only differ by the length parameter of MUMmer or less
+#For more details see Merge_Bedfile.py
+python ./Uniqueness_scripts/Merge_Bedfile.py ./Output/run_$timestamp/Unique_DNA_Regions.bed 20 ./Output/run_$timestamp/Unique_DNA_Regions_merged.bed
+python ./Uniqueness_scripts/Merge_Bedfile.py ./Output/run_$timestamp/Unique_Protein_Regions.bed 10 ./Output/run_$timestamp/Unique_Protein_Regions_merged.bed
+
 #Use bedtools getfasta to extract the fasta sequences of the unique regions annotated in the produced bedfiles
 bedtools getfasta -fi ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa -fo ./Output/run_$timestamp/Unique_DNA_regions.fa -bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
 bedtools getfasta -fi ./Output/run_$timestamp/ORFProteins.fa -fo ./Output/run_$timestamp/Unique_Protein_regions.fa -bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
 
 #Create a report with basics statistics of the uniqueness scripts
 R -e "rmarkdown::render('Extended_Pipeline.Rmd',output_file='./Output/run_$timestamp/Uniqueness_Report.html',params=list(args = c('/Output/run_$timestamp/Unique_DNA_Regions.fa','/Output/run_$timestamp/Unique_Protein_Regions.fa')))"
+
+
+
+
