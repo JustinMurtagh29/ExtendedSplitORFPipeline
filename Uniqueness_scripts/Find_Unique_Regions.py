@@ -2,6 +2,14 @@ import sys
 from Bio import SeqIO
 import pybedtools
 
+# Arguments:
+#
+# 1 = Mummer.mums
+# 2 = non_unique.bed (will be created)
+# 3 = reference.fasta
+# 4 = reference.bed (will be created)
+# 5 = unique.bed (will be created)
+
 # read in the result file of MUMMER (sys.argv[1])
 infile = open(sys.argv[1], "r")
 lines = infile.readlines()
@@ -33,4 +41,4 @@ with open(sys.argv[4], "w") as out2:
 # that now contains only the unique regions. (The regions not annotated in (sys.argv[4]))
 a = pybedtools.BedTool(sys.argv[2])
 b = pybedtools.BedTool(sys.argv[4])
-b.intersect(a, v=True).saveas(sys.argv[5])
+b.subtract(a).saveas(sys.argv[5])
