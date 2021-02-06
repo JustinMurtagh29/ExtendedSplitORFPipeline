@@ -23,10 +23,10 @@ with open(sys.argv[2], "w") as out1:
             name = i[2:-1]
         else:
             columns = i.split()
-            start = columns[2]
-            # MUMMER gives the start position and length of the match, therefor the ens position needs to be calculated
-            end = int(columns[2])+int(columns[3])
-            out1.write(name + "\t" + start + "\t" + str(end) + "\n")
+            start = int(columns[2])-1#1 has to be substracted as Mummers first position is 1 and bedfile positions start at 0
+            # MUMMER gives the start position and length of the match, therefor the end position needs to be calculated
+            end = start+int(columns[3])
+            out1.write(name + "\t" + str(start) + "\t" + str(end) + "\n")
 
 # create a bedfile (sys.argv[4]) of the split-ORF protein fasta (sys.argv[3])
 # by simply annotating the whole sequence for each transcript

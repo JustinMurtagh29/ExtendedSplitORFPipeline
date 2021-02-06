@@ -23,6 +23,7 @@ with open(sys.argv[3], "w") as out:
                 out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
                 previous = columns
         else:
-            if not (previous[0]==""):
+            if (previous[0]!=""):
                 out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
             previous=columns
+    out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")

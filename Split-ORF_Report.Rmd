@@ -2,6 +2,8 @@
 title: "Split-ORF Report"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: html_document
+params:
+    args: myarg
 ---
 
 This report shows a number of summary statistics of the a result file obtained from the [SplitOrfs](https://github.com/SchulzLab/SplitOrfs) software.
@@ -12,14 +14,15 @@ First it provides an overview of the valid alignment results:
 
 
 ```{r basic stats,echo=FALSE}
-#setwd("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/")
 datapath=getwd()
 path = "FinalAnalysis"
+file1=paste0(datapath,params[[1]][[1]])
+file2=paste0(datapath,params[[1]][[2]])
 
 #read in all the Ensembl IDs with transcript support level annotation
-validIds=read.table("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Results/Detained_Introns/ValidProteinORFPairs.txt",header=T)#,fill=T,stringsAsFactors=F) 
+validIds=read.table(file1,header=T)#,fill=T,stringsAsFactors=F) 
 
-tab = read.table("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Results/Detained_Introns/UniqueProteinORFPairs_annotated.txt",header=T)#,fill=T,stringsAsFactors=F)
+tab = read.table(file2,header=T)#,fill=T,stringsAsFactors=F)
 
 tab= subset(tab,tab$OrfTransID %in% validIds$OrfTransID)
 

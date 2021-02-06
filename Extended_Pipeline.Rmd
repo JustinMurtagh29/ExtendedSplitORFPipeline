@@ -25,6 +25,7 @@ for(i in 1:length(list)){
   lengthlist[i]=nchar(list[[i]][[1]])
 }
 cat(paste0("Average length of unique region:\t",round(mean(lengthlist)),"  \n"))
+cat(paste0("Median length of unique region:\t",median(lengthlist),"  \n"))
 cat(paste0("Maximal length of unique region:\t",max(lengthlist)," (for region ", substr(getName(dnaresult[match(max(lengthlist),lengthlist)]),start = 1,stop = 31), ")  \n"))
 DNA_ids=substr(getName(dnaresult),start = 1,stop = 31)
 DNA_Unique_per_transcript=as.vector(table(DNA_ids))
@@ -66,6 +67,7 @@ for(i in 1:length(protlist)){
   protlengthlist[i]=nchar(protlist[[i]][[1]])
 }
 cat(paste0("Average length of unique region:\t",round(mean(protlengthlist)),"  \n"))
+cat(paste0("Median length of unique region:\t",median(protlengthlist),"  \n"))
 cat(paste0("Maximal length of unique region:\t",max(protlengthlist)," (for region ", getName(proteinresult[match(max(protlengthlist),protlengthlist)]), ")  \n"))
 Protein_ids=substr(getName(proteinresult),start = 1,stop = 31)
 Protein_Unique_per_transcript=as.vector(table(Protein_ids))

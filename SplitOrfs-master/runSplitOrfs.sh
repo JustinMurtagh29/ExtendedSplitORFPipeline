@@ -24,7 +24,7 @@ else
 	#-outfmt keyword standard results in file format:
 	#qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
 
-	blastp -query ${output}/OrfProteins.fa -db ${output}/ProteinDatabase -out ${output}/OrfsAlign.txt -outfmt "6 std" -evalue 10 -num_threads 20
+	blastp -query ${output}/OrfProteins.fa -db ${output}/ProteinDatabase -out ${output}/OrfsAlign.txt -evalue 10 -num_threads 8 #-outfmt "6 std"
 
 	#sort the blastp output by the second column to group by proteins
 	sort -k2 ${output}/OrfsAlign.txt > ${output}/OrfsAlign_sorted.txt

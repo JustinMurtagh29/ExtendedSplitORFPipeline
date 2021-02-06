@@ -31,21 +31,21 @@ RED='\033[0;31m' #Red colour for error messages
 NC='\033[0m'	 #No colour for normal messages
 
 #check for right number of arguments
-if [ "$#" -ne 4 ]; then #check for right number of arguments
+if [ "$#" -ne 5 ]; then #check for right number of arguments
   echo -e "${RED}
 ERROR while executing the Pipeline!
 Wrong number of arguments.${NC}"
   echo "$usage" >&2
   exit 1
 #check if any argument is a directory
-elif  [ -d "$1" ] || [ -d "$2" ] || [ -d "$3" ] || [ -d "$4" ]; then
+elif  [ -d "$1" ] || [ -d "$2" ] || [ -d "$3" ] || [ -d "$4" ] || [ -d "$5" ]; then
   echo -e "${RED}
 ERROR while executing the Pipeline!
 One or more of the arguments are directories.${NC}"
   echo "$usage" >&2
   exit 1
 #check if every argument has the correct file extension
-elif ! [[ $1 =~ \.fa$ ]] || ! [[ $2 =~ \.fa$ ]] || ! [[ $3 =~ \.bed$ ]] || ! [[ $4 =~ \.fa$ ]]; then
+elif ! [[ $1 =~ \.fa$ ]] || ! [[ $2 =~ \.fa$ ]] || ! [[ $3 =~ \.bed$ ]] || ! [[ $4 =~ \.fa$ ]] || ! [[ $5 =~ \.fa$ ]]; then
   echo -e "${RED}
 ERROR while executing the Pipeline!
 One or more of the arguments are not in the specified file format.${NC}"
@@ -58,6 +58,7 @@ proteins=$1
 transcripts=$2
 annotation=$3
 proteinCodingTranscripts=$4
+proteins2=$5
 
 [ -d "./Output" ] && echo "Directory ./Output exists." || echo "Directory ./Output does not exist, creating ..." && mkdir ./Output && echo "Directory ./Output created."
 
@@ -77,9 +78,53 @@ source $(conda info --base)/etc/profile.d/conda.sh
 #activate py2 environment in order to execute runSplitOrfs.sh (see runSplitOrfs.sh for more information)
 conda activate py2
 echo 'Run SplitORFs'
-source ./SplitOrfs-master/runSplitOrfs.sh ./Output/run_$timestamp $proteins $transcripts $annotation
+output="./Output/run_$timestamp"
+echo "*********$output**********"
 
-#Create a report with basic statistics of the the pipeline results
+
+echo "run the SplitOrfs script on: " $output $proteins $transcripts $annotation
+
+#create Orf sequences
+python ./SplitOrfs-master/OrfFinder.py $transcripts > $output/OrfProteins.fa
+
+#activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py --> Dependency BioSeqIO which needs python3
+conda activate py3_7
+
+#Determine Unique Protein regions by calling mummer maxmatch with a minimum length of 10, annotating the matches (non unique regions) in a bedfile and using bedtools subtract to get the non matching regions
+#which are then annotated as the unique regions in another bedfile
+echo "Align ORF-transcripts(Protein) to protein coding transcripts mummer -maxmatch -l 10"
+mummer -maxmatch -l 10 $proteins2 ./Output/run_$timestamp/ORFProteins.fa > ./Output/run_$timestamp/Proteins_maxmatch_l10.mums
+echo "Select the non matching regions as unique regions and save as bedfile"
+python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Protein_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
+python ./Uniqueness_scripts/Merge_Bedfile.py $output/Unique_Protein_Regions.bed 10 $output/Unique_Protein_Regions_merged.bed
+bedtools subtract -a $output/ORFProteins.bed -b $output/Unique_Protein_Regions_merged.bed > $output/ProteinRegionsforBlast.bed
+bedtools getfasta -fi $output/ORFProteins.fa -bed $output/ProteinRegionsforBlast.bed -fo $output/ProteinsforBlast.fa
+
+conda deactivate
+makeblastdb -in $proteins -out $output/ProteinDatabase -dbtype prot
+
+#use BlastP to align the translated ORFs to the proteins (currently using 20 threads, change -num_threads otherwise
+#-outfmt keyword standard results in file format:
+#qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
+
+blastp -query $output/ProteinsforBlast.fa -db $output/ProteinDatabase -out $output/OrfsAlign.txt -evalue 10 -num_threads 8 -outfmt "6 std"
+
+#sort the blastp output by the second column to group by proteins
+sort -k2 $output/OrfsAlign.txt > $output/OrfsAlign_sorted.txt
+#rm ${output}/OrfsAlign.txt
+
+#run the detection script to parse
+python ./SplitOrfs-master/DetectValidSplitOrfMatches.py $output/OrfsAlign_sorted.txt > $output/ValidProteinORFPairs.txt
+
+#sort file per Orf-transcript ID on column 3. Here it is important to omit the head while sorting
+cat $output/ValidProteinORFPairs.txt | awk 'NR<2{print ;next}{print | "sort -k3"}'  > $output/ValidProteinORFPairs_sortCol3.txt
+python ./SplitOrfs-master/getLongestOrfMatches.py $output/ValidProteinORFPairs_sortCol3.txt > $output/UniqueProteinORFPairs.txt
+
+python ./SplitOrfs-master/makeBed.py $output/UniqueProteinORFPairs.txt > $output/UniqueProteinMatches.bed
+
+bedtools intersect -a $output/UniqueProteinMatches.bed -b $annotation -wa -F 1  -wb > $output/intersectResults.txt
+python ./SplitOrfs-master/addFunctionalOverlap.py $output/UniqueProteinORFPairs.txt $output/intersectResults.txt > $output/UniqueProteinORFPairs_annotated.txt
+
 R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('/Output/run_$timestamp/ValidProteinORFPairs.txt','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt')))"
 
 #activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py --> Dependency BioSeqIO which needs python3
@@ -96,23 +141,15 @@ mummer -maxmatch $proteinCodingTranscripts ./Output/run_$timestamp/UniqueProtein
 echo "Select the non matching regions as unique regions and save as bedfile"
 python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/DNA_maxmatch.mums ./Output/run_$timestamp/DNA_non_unique.bed ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa ./Output/run_$timestamp/UniqueProteinORFPairsSequences.bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
 
-#Determine Unique Protein regions by calling mummer maxmatch with a minimum length of 10, annotating the matches (non unique regions) in a bedfile and using bedtools subtract to get the non matching regions
-#which are then annotated as the unique regions in another bedfile
-echo "Align ORF-transcripts(Protein) to protein coding transcripts mummer -maxmatch -l 10"
-mummer -maxmatch -l 10 $proteins ./Output/run_$timestamp/ORFProteins.fa > ./Output/run_$timestamp/Proteins_maxmatch_l10.mums
-echo "Select the non matching regions as unique regions and save as bedfile"
-python ./Uniqueness_scripts/Find_Unique_Regions.py ./Output/run_$timestamp/Proteins_maxmatch_l10.mums ./Output/run_$timestamp/Protein_non_unique.bed ./Output/run_$timestamp/ORFProteins.fa ./Output/run_$timestamp/OrfProteins.bed ./Output/run_$timestamp/Unique_Protein_Regions.bed
-
-#Merge the bedfile entries if the start and end positions for the smae transcript only differ by the length parameter of MUMmer or less
+#Merge the bedfile entries if the start and end positions for the same transcript only differ by the length parameter of MUMmer or less
 #For more details see Merge_Bedfile.py
 python ./Uniqueness_scripts/Merge_Bedfile.py ./Output/run_$timestamp/Unique_DNA_Regions.bed 20 ./Output/run_$timestamp/Unique_DNA_Regions_merged.bed
-python ./Uniqueness_scripts/Merge_Bedfile.py ./Output/run_$timestamp/Unique_Protein_Regions.bed 10 ./Output/run_$timestamp/Unique_Protein_Regions_merged.bed
 
 #Select the valid ORF-Proteins annotated in ValidProteinORFPairs_sortCol3.txt
 python ./Uniqueness_scripts/SelectValidOrfSequences.py ./Output/run_$timestamp/ValidProteinORFPairs_sortCol3.txt ./Output/run_$timestamp/Unique_Protein_Regions_merged.bed ./Output/run_$timestamp/Unique_Protein_Regions_merged_valid.bed
 
 #Use bedtools getfasta to extract the fasta sequences of the unique regions annotated in the produced bedfiles
-bedtools getfasta -fi ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa -fo ./Output/run_$timestamp/Unique_DNA_regions.fa -bed ./Output/run_$timestamp/Unique_DNA_Regions.bed
+bedtools getfasta -fi ./Output/run_$timestamp/UniqueProteinORFPairsSequences.fa -fo ./Output/run_$timestamp/Unique_DNA_regions.fa -bed ./Output/run_$timestamp/Unique_DNA_Regions_merged.bed
 bedtools getfasta -fi ./Output/run_$timestamp/ORFProteins.fa -fo ./Output/run_$timestamp/Unique_Protein_regions.fa -bed ./Output/run_$timestamp/Unique_Protein_Regions_merged_valid.bed
 
 #Create a report with basics statistics of the uniqueness scripts

@@ -10,7 +10,7 @@ import re
 from itertools import groupby
 
 minOrfNum=2  #minimum number ORFs that need to align to a peptide sequence
-identityCutoff = 90  #minimum percent identity of the protein alignment to be considered as a valid ORF-peptide match
+identityCutoff = 95  #minimum percent identity of the protein alignment to be considered as a valid ORF-peptide match
 minLength = 50 #minimum number of amino acids for an ORF to be considered
 minAlignmentRate = 0.5 # rate of positions to be covered by the alignment of an ORF (to remove spurious local protein alignments)
 colon=":"
@@ -62,7 +62,6 @@ else :
         for line in file :
             elems = line.split("\t")
             orf=re.split("[|:]+",elems[0])
-            
             if lastElem != elems[1] :
                 #found a new target transcript
                 #go through all transcripts that have matches to the target
@@ -70,12 +69,15 @@ else :
                 checkAlignments(Alignments,target[0],target[1])
                 lastElem = elems[1]
                 Alignments={}
+                target=(elems[1]).split("|")
 
+            orflength=orf[5].split("-")
+            blastOrfLength=int(orflength[1])-int(orflength[0]) + 2
             orfLenNuc=int(orf[4]) - int(orf[3])+1
             orfLenProt=orfLenNuc/float(3)
             alignLength=float(int(elems[9])-int(elems[8])+1)
 
-            if (float(elems[2]) >= identityCutoff) and (orfLenProt >= minLength) and (orf[0] == target[0]) and ((alignLength/orfLenProt) >= minAlignmentRate):
+            if (float(elems[2]) >= identityCutoff) and (orfLenProt >= minLength) and (orf[0] == target[0]) and ((alignLength/blastOrfLength) >= minAlignmentRate):
                 dummy=orf[2:5]
                 dummy.append(str(elems[2]))
                 dummy.append(str(int(alignLength)))
