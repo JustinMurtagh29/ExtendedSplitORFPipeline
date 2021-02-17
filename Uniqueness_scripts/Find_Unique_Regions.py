@@ -30,11 +30,11 @@ with open(sys.argv[2], "w") as out1:
 
 # create a bedfile (sys.argv[4]) of the split-ORF protein fasta (sys.argv[3])
 # by simply annotating the whole sequence for each transcript
-# Format:   Transcript ID   start (will always be 1)    end
+# Format:   Transcript ID   start (will always be 0)    end
 reference = SeqIO.parse(sys.argv[3], "fasta")
 with open(sys.argv[4], "w") as out2:
        for line in reference:
-           out2.write(line.id + "\t" + "1" + "\t" + str(len(str(line.seq))) + "\n")
+           out2.write(line.id + "\t" + "0" + "\t" + str(len(str(line.seq))) + "\n")
 
 # Use the bedfile of the split-ORF proteins (sys.argv[4]) as reference and use
 # the inverse intersect function of bedtools to create a bedfile (sys.argv[5])

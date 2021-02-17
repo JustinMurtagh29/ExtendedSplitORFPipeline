@@ -1,3 +1,4 @@
+#This script selects the Valid-ORFs and their protein sequence Positions 
 import sys
 
 file = open(sys.argv[1],'r')

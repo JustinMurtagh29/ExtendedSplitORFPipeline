@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#THIS SCRIPT CALLS THE genomicpositions AND THE genomicpositions_protein SCRIPT WITH THE GIVEN FILES 
+
 #Help message:
 usage="
 Usage: ./GetGenomicRegions.sh [-h] GenomicAnnotation.bed UniqueDNA.bed UniqueDNAOut.bed UniqueProtein.bed UniqueProteinOut.bed
