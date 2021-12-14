@@ -1,0 +1,240 @@
+---
+title: "Gene Statistics"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Human statistics
+
+```{r setup and Input, echo=FALSE, warning=FALSE,results = 'asis',include=FALSE}
+library("readxl")
+library("UpSetR")
+library("dplyr")
+NMD_all <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_all",col_names = FALSE)
+NMD_ORFs <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_ORFs",col_names = FALSE)
+NMD_Unique_DNA <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_unique_DNA",col_names = FALSE)
+NMD_Unique_Peptide <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_unique_Peptide",col_names = FALSE)
+NMD_MS <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_MS",col_names = FALSE)
+NMD_Heart<- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_Ribo_heart",col_names = FALSE)
+NMD_Leukemia_1 <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_Ribo_Leuk_1",col_names = FALSE)
+NMD_Leukemia_2 <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes.xlsx", sheet="NMD_Ribo_Leuk_2",col_names = FALSE)
+
+remove_NAs <- function(x){
+  x<-x[!is.na(x)]
+  if(any(x=="nan")){
+    x<-x[-c(which(x=="nan"))]
+  }
+  return(x)
+}
+
+NMD_all_genes = remove_NAs(pull(NMD_all, 2))
+NMD_ORFs_genes = remove_NAs(pull(NMD_ORFs, 2))
+NMD_Unique_DNA_genes = remove_NAs(pull(NMD_Unique_DNA, 2))
+NMD_Unique_Peptide_genes = remove_NAs(pull(NMD_Unique_Peptide, 2))
+NMD_MS_genes = pull(NMD_MS, 1)
+NMD_Heart_genes = remove_NAs(pull(NMD_Heart, 2))
+NMD_Leukemia_1_genes = remove_NAs(pull(NMD_Leukemia_1, 2))
+NMD_Leukemia_2_genes = remove_NAs(pull(NMD_Leukemia_2, 2))
+
+upsetlist=c(list(NMD_all_genes),list(NMD_ORFs_genes),list(NMD_Unique_DNA_genes),list(NMD_Unique_Peptide_genes),list(NMD_MS_genes),list(NMD_Heart_genes),list(NMD_Leukemia_1_genes),list(NMD_Leukemia_2_genes))
+names(upsetlist)=c("All NMD Transcripts","valid NMD split-ORFs","NMD unique DNA regions","NMD unique protein regions","NMD unique protein regions validated by MS","NMD unique DNA regions in heart ribo-seq","NMD unique DNA regions in leukemia_1 ribo-seq","NMD unique DNA regions in leukemia_2 ribo-seq")
+
+tmp=list()
+for(i in upsetlist$`NMD unique protein regions validated by MS`){
+  if( i %in% upsetlist$`NMD unique protein regions`){#||i %in% upsetlist$`All NMD Transcripts` || i %in% upsetlist$`valid NMD split-ORF` || i %in% upsetlist$`NMD unique DNA regions` || i %in% upsetlist$`NMD unique DNA regions in heart ribo-seq`|| i %in% upsetlist$`NMD unique DNA regions in leukemia_1 ribo-seq` || i %in% upsetlist$`NMD unique DNA regions in leukemia_2 ribo-seq`)
+    tmp=c(tmp,i)
+     }
+}
+upsetlist$`NMD unique protein regions validated by MS`=tmp
+
+RI_all <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_all",col_names = FALSE)
+RI_ORFs <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_ORFs",col_names = FALSE)
+RI_Unique_DNA <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_unique_DNA",col_names = FALSE)
+RI_Unique_Peptide <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_unique_Peptide",col_names = FALSE)
+#RI_MS <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_MS",col_names = FALSE)
+RI_Heart<- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_Ribo_heart",col_names = FALSE)
+RI_Leukemia_1 <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_Ribo_Leuk_1",col_names = FALSE)
+RI_Leukemia_2 <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI.xlsx", sheet="RI_Ribo_Leuk_2",col_names = FALSE)
+
+RI_all_genes = remove_NAs(pull(RI_all, 2))
+RI_ORFs_genes = remove_NAs(pull(RI_ORFs, 2))
+RI_Unique_DNA_genes = remove_NAs(pull(RI_Unique_DNA, 2))
+RI_Unique_Peptide_genes = remove_NAs(pull(RI_Unique_Peptide, 2))
+RI_Heart_genes = remove_NAs(pull(RI_Heart, 2))
+RI_Leukemia_1_genes = remove_NAs(pull(RI_Leukemia_1, 2))
+RI_Leukemia_2_genes = remove_NAs(pull(RI_Leukemia_2, 2))
+
+riupsetlist=c(list(RI_all_genes),list(RI_ORFs_genes),list(RI_Unique_DNA_genes),list(RI_Unique_Peptide_genes),list(RI_Heart_genes),list(RI_Leukemia_1_genes),list(RI_Leukemia_2_genes))
+names(riupsetlist)=c("All RI Transcripts","valid RI split-ORFs","RI unique DNA regions","RI unique protein regions","RI unique DNA regions in heart ribo-seq","RI unique DNA regions in leukemia_1 ribo-seq","RI unique DNA regions in leukemia_2 ribo-seq")
+```
+
+## Upsetplot showing the overlap of genes between the different result files for the NMD transcripts
+
+```{r OutputNMD, echo=FALSE, fig.height = 7, fig.width = 13}
+
+upset(fromList(upsetlist), order.by = "freq", nsets = 8,point.size = 2.25, line.size = 1.5, set_size.show = TRUE,
+      set_size.scale_max = 9000, 
+      mainbar.y.label = "Intersecting genes", sets.x.label = "Genes per dataset",
+      text.scale = c(2, 1.5, 1.25, 1.5, 1.5, 1.5))# c(1.5, 1.25, 0.9, 1.25, 1.25, 1.5)c(1, 1, 0.9, 1, 1, 1)
+```
+
+### The following genes were found in all datasets:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(upsetlist[[1]],upsetlist[[2]],upsetlist[[3]],upsetlist[[4]],upsetlist[[5]],upsetlist[[6]],upsetlist[[7]],upsetlist[[8]])))
+```
+
+## Upsetplot showing the overlap of genes between the different result files for the RI transcripts
+
+```{r OutputRI, echo=FALSE, fig.height = 7, fig.width = 13}
+upset(fromList(riupsetlist), order.by = "freq", nsets = 7, point.size = 2.25, line.size = 1.5, set_size.show = TRUE,
+      set_size.scale_max = 11250, 
+      mainbar.y.label = "Intersecting genes", sets.x.label = "Genes per dataset",
+       text.scale = c(2, 1.5, 1.25, 1.25, 1.5, 1.5))# c(1.5, 1.25, 0.9, 1.25, 1.25, 1.5)c(1, 1, 0.9, 1, 1, 1)
+```
+
+### The following genes were found in all datasets:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(riupsetlist[[1]],riupsetlist[[2]],riupsetlist[[3]],riupsetlist[[4]],riupsetlist[[5]],riupsetlist[[6]],riupsetlist[[7]])))
+```
+
+# Mouse statistics
+
+```{r setup and Input mouse, echo=FALSE, warning=FALSE,results = 'asis',include=FALSE}
+NMD_all_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_all",col_names = FALSE)
+NMD_ORFs_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_ORFs",col_names = FALSE)
+NMD_Unique_DNA_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_Unique_DNA",col_names = FALSE)
+NMD_Unique_Peptide_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_Unique_Peptide",col_names = FALSE)
+NMD_Heart_1_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_Ribo_Heart_1",col_names = FALSE)
+NMD_Heart_2_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_mouse.xlsx", sheet="NMD_Ribo_Heart_2",col_names = FALSE)
+
+remove_NAs <- function(x){
+  x<-x[!is.na(x)]
+  if(any(x=="nan")){
+    x<-x[-c(which(x=="nan"))]
+  }
+  return(x)
+}
+
+NMD_all_mouse_genes = remove_NAs(pull(NMD_all_mouse, 2))
+NMD_ORFs_mouse_genes = remove_NAs(pull(NMD_ORFs_mouse, 2))
+NMD_Unique_DNA_mouse_genes = remove_NAs(pull(NMD_Unique_DNA_mouse, 2))
+NMD_Unique_Peptide_mouse_genes = remove_NAs(pull(NMD_Unique_Peptide_mouse, 2))
+NMD_Heart_1_mouse_genes = remove_NAs(pull(NMD_Heart_1_mouse, 2))
+NMD_Heart_2_mouse_genes = remove_NAs(pull(NMD_Heart_2_mouse, 2))
+
+mouseupsetlist=c(list(NMD_all_mouse_genes),list(NMD_ORFs_mouse_genes),list(NMD_Unique_DNA_mouse_genes),list(NMD_Unique_Peptide_mouse_genes),list(NMD_Heart_1_mouse_genes),list(NMD_Heart_2_mouse_genes))
+names(mouseupsetlist)=c("All NMD Transcripts","valid NMD split-ORFs","NMD unique DNA regions","NMD unique protein regions","NMD unique DNA regions in Heart_1 ribo-seq","NMD unique DNA regions in Heart_2 ribo-seq")
+
+
+RI_all_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_all",col_names = FALSE)
+RI_ORFs_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_ORFs",col_names = FALSE)
+RI_Unique_DNA_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_Unique_DNA",col_names = FALSE)
+RI_Unique_Peptide_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_Unique_Peptide",col_names = FALSE)
+RI_Heart_1_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_Ribo_Heart_1",col_names = FALSE)
+RI_Heart_2_mouse <- read_xlsx(path = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/Validated_Genes_RI_mouse.xlsx", sheet="RI_Ribo_Heart_2",col_names = FALSE)
+
+RI_all_mouse_genes = remove_NAs(pull(RI_all_mouse, 2))
+RI_ORFs_mouse_genes = remove_NAs(pull(RI_ORFs_mouse, 2))
+RI_Unique_DNA_mouse_genes = remove_NAs(pull(RI_Unique_DNA_mouse, 2))
+RI_Unique_Peptide_mouse_genes = remove_NAs(pull(RI_Unique_Peptide_mouse, 2))
+RI_Heart_1_mouse_genes = remove_NAs(pull(RI_Heart_1_mouse, 2))
+RI_Heart_2_mouse_genes = remove_NAs(pull(RI_Heart_2_mouse, 2))
+
+mouseriupsetlist=c(list(RI_all_mouse_genes),list(RI_ORFs_mouse_genes),list(RI_Unique_DNA_mouse_genes),list(RI_Unique_Peptide_mouse_genes),list(RI_Heart_1_mouse_genes),list(RI_Heart_2_mouse_genes))
+names(mouseriupsetlist)=c("All RI Transcripts","valid RI split-ORFs","RI unique DNA regions","RI unique protein regions","RI unique DNA regions in Heart_1 ribo-seq","RI unique DNA regions in Heart_2 ribo-seq")
+```
+
+## Upsetplot showing the overlap of genes between the different result files for the NMD transcripts
+
+```{r OutputNMDMouse, echo=FALSE, fig.height = 7, fig.width = 12}
+
+upset(fromList(mouseupsetlist), order.by = "freq", nsets = 6,point.size = 2.25, line.size = 1.5, set_size.show = TRUE,
+      set_size.scale_max = 6000, 
+      mainbar.y.label = "Intersecting genes", sets.x.label = "Genes per dataset",
+      text.scale = c(2, 1.5, 1.25, 1.5, 1.5, 2))# c(1.5, 1.25, 0.9, 1.25, 1.25, 1.5)c(1, 1, 0.9, 1, 1, 1)
+```
+
+### The following genes were found in all datasets:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(mouseupsetlist[[1]],mouseupsetlist[[2]],mouseupsetlist[[3]],mouseupsetlist[[4]],mouseupsetlist[[5]],mouseupsetlist[[6]])))
+```
+
+## Upsetplot showing the overlap of genes between the different result files for the RI transcripts
+
+```{r OutputRIMouse, echo=FALSE, fig.height = 7, fig.width = 12}
+upset(fromList(mouseriupsetlist), order.by = "freq", nsets = 6, point.size = 2.25, line.size = 1.5, set_size.show = TRUE,
+      set_size.scale_max = 11250, 
+      mainbar.y.label = "Intersecting genes", sets.x.label = "Genes per dataset",
+       text.scale = c(2, 1.5, 1.25, 1.25, 1.5, 2))# c(1.5, 1.25, 0.9, 1.25, 1.25, 1.5)c(1, 1, 0.9, 1, 1, 1)
+```
+
+### The following genes were found in all datasets:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(mouseriupsetlist[[1]],mouseriupsetlist[[2]],mouseriupsetlist[[3]],mouseriupsetlist[[4]],mouseriupsetlist[[5]],mouseriupsetlist[[6]])))
+```
+
+<center> <h3> Overlap between NMD and RI genes</h3> </center>
+
+
+
+```{r, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE,results = 'asis',}
+library("ggplot2")
+library("grid")
+library("ggvenn")
+
+InnerspeciesComparison=list("NMD genes" = NMD_ORFs_genes, "RI genes" = RI_ORFs_genes)
+
+ggvenn(InnerspeciesComparison, fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, set_name_size = 4) + ggtitle("split-ORF enconding Genes in human NMD vs RI")
+
+InnerspeciesComparisonMouse=list("NMD genes" = NMD_ORFs_mouse_genes, "RI genes" = RI_ORFs_mouse_genes)
+
+ggvenn(InnerspeciesComparisonMouse, fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, set_name_size = 4) + ggtitle("split-ORF enconding Genes in mouse NMD vs RI")
+```
+
+## The following are the overlaping human genes:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(InnerspeciesComparison[[1]],InnerspeciesComparison[[2]])))
+```
+
+## And the overlaping mouse genes:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(InnerspeciesComparisonMouse[[1]],InnerspeciesComparisonMouse[[2]])))
+```
+
+<center> <h3> Overlap between human and mouse genes</h3> </center>
+
+```{r, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE,results = 'asis',}
+NMD_ORFs_mouse_genes_compare=toupper(NMD_ORFs_mouse_genes)
+ComparisonList=list("NMD genes human" = NMD_ORFs_genes, "NMD genes mouse" = NMD_ORFs_mouse_genes_compare)
+
+ggvenn(ComparisonList, fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, set_name_size = 4) + ggtitle("split-ORF enconding Genes in human and mouse (NMD)")
+
+RI_ORFs_mouse_genes_compare=toupper(RI_ORFs_mouse_genes)
+ComparisonListRI=list("RI genes human" = RI_ORFs_genes, "RI genes mouse" = RI_ORFs_mouse_genes_compare)
+
+ggvenn(ComparisonListRI, fill_color = c("#0073C2FF", "#CD534CFF"),
+  stroke_size = 0.5, set_name_size = 4) + ggtitle("split-ORF enconding Genes in human and mouse (RI)")
+```
+
+## The following are the overlaping NMD genes:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(ComparisonList[[1]],ComparisonList[[2]])))
+```
+
+## And the overlaping RI genes:
+
+```{r, echo=FALSE}
+print(Reduce(intersect, list(ComparisonListRI[[1]],ComparisonListRI[[2]])))
+```

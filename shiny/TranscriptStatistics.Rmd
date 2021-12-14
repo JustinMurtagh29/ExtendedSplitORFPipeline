@@ -1,0 +1,298 @@
+---
+title: "TranscriptStatistics"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Human
+
+## Transcript length and Methionine density
+
+```{r Input, echo=FALSE}
+splitTranscripts=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/split-ORF_Transcripts_length.tsv',
+  sep = '\t', header = FALSE)
+splitlengths=splitTranscripts[,2]
+
+nonSplitTranscripts=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/non-split-ORF_Transcripts_length.tsv',
+  sep = '\t', header = FALSE)
+nonsplitlengths=nonSplitTranscripts[,2]
+
+lengths=c("split-ORF encoding NMD Transcripts"=list(splitlengths), "Remaining NMD Transcripts" = list(nonsplitlengths))
+
+
+splitTranscriptsDense=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/split-ORF_Transcripts_met_density.tsv',
+  sep = '\t', header = FALSE)
+splitdensities=splitTranscriptsDense[,2]
+
+nonSplitTranscriptsDense=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/non-split-ORF_Transcripts_met_density.tsv',
+  sep = '\t', header = FALSE)
+nonsplitdensities=nonSplitTranscriptsDense[,2]
+
+densities=c("split-ORF encoding NMD Transcripts"=list(splitdensities), "Remaining NMD Transcripts" = list(nonsplitdensities))
+```
+
+
+```{r OutputLength, echo=FALSE}
+## Length Distribution and two sided t-test
+#boxplot(lengths,ylab="Transcript cDNA length",outline = FALSE)
+
+#t.test(lengths[[1]],lengths[[2]])
+```
+
+
+```{r OutputDensity, echo=FALSE}
+## Methionine density Distribution and two sided t-test
+#boxplot(densities,ylab="Methionine density of transcript peptide sequence")
+
+#t.test(densities[[1]],densities[[2]])
+```
+
+```{r InputCoding, echo=FALSE}
+codingTranscripts=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/Protein_coding_peptide_length.tsv",
+  sep = '\t', header = FALSE)
+codinglengths=codingTranscripts[,2]
+
+comparelengths=c("split-ORF encoding NMD Transcripts"=list(splitlengths),"Remaining NMD Transcripts" = list(nonsplitlengths), "coding Transcripts" = list(codinglengths))
+
+
+codingTranscriptsDense=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/Protein_coding_peptide_met_density.tsv",
+  sep = '\t', header = FALSE)
+codingdensities=codingTranscriptsDense[,2]
+
+
+densitiesCompare=c("split-ORF NMD Transcripts"=list(splitdensities),"Remaining NMD Transcripts" = list(nonsplitdensities), "Coding Transcripts" = list(codingdensities))
+```
+
+## Length Distribution and two sided t-test between split-ORF encoding NMD transcripts and coding transcripts
+
+
+```{r OutputLengthCoding, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(comparelengths,ylab="Transcript cDNA length (bp)",outline = FALSE,main="Length Distribution of NMD transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining NMD transcripts:")
+t.test(comparelengths[[1]],comparelengths[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(comparelengths[[1]],comparelengths[[3]])
+cat("T-test between remaining NMD transcripts and coding transcripts:")
+t.test(comparelengths[[2]],comparelengths[[3]])
+```
+
+## Methionine density Distribution and two sided t-test between split-ORF encoding NMD transcripts and coding transcripts
+
+
+```{r OutputDensityCoding, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(densitiesCompare,ylab="Methionine density of transcript peptide sequence",outline = FALSE,main="Methionine density Distribution of NMD transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining NMD transcripts:")
+t.test(densitiesCompare[[1]],densitiesCompare[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(densitiesCompare[[1]],densitiesCompare[[3]])
+cat("T-test between remaining NMD transcripts and coding transcripts:")
+t.test(densitiesCompare[[2]],densitiesCompare[[3]])
+```
+
+
+
+```{r InputRI, echo=FALSE}
+RIsplitTranscripts=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_split-ORF_Transcripts_DNA_length.tsv",
+  sep = '\t', header = FALSE)
+RIsplitlengths=RIsplitTranscripts[,2]
+
+
+RIsplitTranscriptsDense=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_split-ORF_Transcripts_met_density.tsv",
+  sep = '\t', header = FALSE)
+RIsplitdensities=RIsplitTranscriptsDense[,2]
+
+RINonsplitTranscripts=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_non-split-ORF_Transcripts_DNA_length.tsv",
+  sep = '\t', header = FALSE)
+RINonsplitlengths=RINonsplitTranscripts[,2]
+
+
+RINonsplitTranscriptsDense=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_non-split-ORF_Transcripts_met_density.tsv",
+  sep = '\t', header = FALSE)
+RINonsplitdensities=RINonsplitTranscriptsDense[,2]
+
+RIcomparelengths=c("split-ORF encoding RI Transcripts"=list(RIsplitlengths),"Remaining RI Transcripts" = list(RINonsplitlengths), "coding Transcripts" = list(codinglengths))
+RIdensitiesCompare=c("split-ORF encoding RI Transcripts"=list(RIsplitdensities),"Remaining RI Transcripts" = list(RINonsplitdensities), "Coding Transcripts" = list(codingdensities))
+
+```
+
+
+
+## Length Distribution and two sided t-test between split-ORF encoding RI transcripts and coding transcripts
+
+
+```{r OutputLengthCodingRI, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(RIcomparelengths,ylab="Transcript cDNA length (bp)",outline = FALSE,main="Length Distribution of RI transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(RIcomparelengths[[1]],RIcomparelengths[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(RIcomparelengths[[1]],RIcomparelengths[[3]])
+cat("T-test between the remaining RI transcripts and coding transcripts:")
+t.test(RIcomparelengths[[2]],RIcomparelengths[[3]])
+```
+
+## Methionine density Distribution and two sided t-test between split-ORF encoding RI transcripts and coding transcripts
+
+
+```{r OutputDensityCodingRI, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(RIdensitiesCompare,ylab="Methionine density of transcript peptide sequence",outline = FALSE,main="Methionine density Distribution of RI transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(RIdensitiesCompare[[1]],RIdensitiesCompare[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(RIdensitiesCompare[[1]],RIdensitiesCompare[[3]])
+cat("T-test between the remaining RI transcripts and coding transcripts:")
+t.test(RIdensitiesCompare[[2]],RIdensitiesCompare[[3]])
+```
+
+
+
+# Mouse
+
+## Transcript length and Methionine density
+
+```{r InputMouse, echo=FALSE}
+splitTranscriptsMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD_split-ORF_Transcripts_DNA_mouse_length.tsv",
+  sep = '\t', header = FALSE)
+splitlengthsMouse=splitTranscriptsMouse[,2]
+
+
+splitTranscriptsDenseMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD_split-ORF_Transcripts_mouse_met_density.tsv",
+  sep = '\t', header = FALSE)
+splitdensitiesMouse=splitTranscriptsDenseMouse[,2]
+
+NonsplitTranscriptsMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD_non-split-ORF_Transcripts_DNA_mouse_length.tsv",
+  sep = '\t', header = FALSE)
+NonsplitlengthsMouse=NonsplitTranscriptsMouse[,2]
+
+
+NonsplitTranscriptsDenseMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD_non-split-ORF_Transcripts_mouse_met_density.tsv",
+  sep = '\t', header = FALSE)
+NonsplitdensitiesMouse=NonsplitTranscriptsDenseMouse[,2]
+
+```
+
+
+```{r InputCodingMouse, echo=FALSE}
+codingTranscriptsMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/Protein_coding_DNA_mouse_length.tsv",
+  sep = '\t', header = FALSE)
+codinglengthsMouse=codingTranscriptsMouse[,2]
+
+comparelengthsMouse=c("split-ORF encoding NMD Transcripts"=list(splitlengthsMouse),"Remaining NMD Transcripts" = list(NonsplitlengthsMouse), "coding Transcripts" = list(codinglengthsMouse))
+
+
+codingTranscriptsDenseMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/Protein_coding_peptide_mouse_met_density.tsv",
+  sep = '\t', header = FALSE)
+codingdensitiesMouse=codingTranscriptsDenseMouse[,2]
+
+
+densitiesCompareMouse=c("split-ORF encoding NMD Transcripts"=list(splitdensitiesMouse),"Remaining NMD Transcripts" = list(NonsplitdensitiesMouse), "Coding Transcripts" = list(codingdensitiesMouse))
+```
+
+## Length Distribution and two sided t-test between split-ORF encoding NMD transcripts and coding transcripts
+
+
+```{r OutputLengthCodingMouse, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(comparelengthsMouse,ylab="Transcript cDNA length (bp)",outline = FALSE,main="Length Distribution of NMD transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(comparelengthsMouse[[1]],comparelengthsMouse[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(comparelengthsMouse[[1]],comparelengthsMouse[[3]])
+cat("T-test remaining RI transcripts and coding transcripts:")
+t.test(comparelengthsMouse[[2]],comparelengthsMouse[[3]])
+```
+
+## Methionine density Distribution and two sided t-test between split-ORF encoding NMD transcripts and coding transcripts
+
+
+```{r OutputDensityCodingMouse, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(densitiesCompareMouse,ylab="Methionine density of transcript peptide sequence",outline = FALSE,main="Methionine density distribution of NMD transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(densitiesCompareMouse[[1]],densitiesCompareMouse[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(densitiesCompareMouse[[1]],densitiesCompareMouse[[3]])
+cat("T-test remaining RI transcripts and coding transcripts:")
+t.test(densitiesCompareMouse[[2]],densitiesCompareMouse[[3]])
+```
+
+
+
+```{r InputRIMouse, echo=FALSE}
+RIsplitTranscriptsMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_split-ORF_Transcripts_DNA_mouse_length.tsv",
+  sep = '\t', header = FALSE)
+RIsplitlengthsMouse=RIsplitTranscriptsMouse[,2]
+
+
+RIsplitTranscriptsDenseMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_split-ORF_Transcripts_mouse_met_density.tsv",
+  sep = '\t', header = FALSE)
+RIsplitdensitiesMouse=RIsplitTranscriptsDenseMouse[,2]
+
+RINonsplitTranscriptsMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_non-split-ORF_Transcripts_DNA_mouse_length.tsv",
+  sep = '\t', header = FALSE)
+RINonsplitlengthsMouse=RINonsplitTranscriptsMouse[,2]
+
+
+RINonsplitTranscriptsDenseMouse=read.table(
+  file = "G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI_non-split-ORF_Transcripts_mouse_met_density.tsv",
+  sep = '\t', header = FALSE)
+RINonsplitdensitiesMouse=RINonsplitTranscriptsDenseMouse[,2]
+
+
+RIcomparelengthsMouse=c("split-ORF encoding RI Transcripts"=list(RIsplitlengthsMouse),"Remaining RI Transcripts" = list(RINonsplitlengthsMouse), "coding Transcripts" = list(codinglengthsMouse))
+RIdensitiesCompareMouse=c("split-ORF encoding RI Transcripts"=list(RIsplitdensitiesMouse),"Remaining RI Transcripts" = list(RINonsplitdensitiesMouse), "Coding Transcripts" = list(codingdensitiesMouse))
+
+```
+
+
+
+## Length Distribution and two sided t-test between split-ORF encoding RI transcripts and coding transcripts
+
+
+```{r OutputLengthCodingMouseRI, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(RIcomparelengthsMouse,ylab="Transcript cDNA length (bp)",outline = FALSE,main="Length Distribution of RI transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(RIcomparelengthsMouse[[1]],RIcomparelengthsMouse[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(RIcomparelengthsMouse[[1]],RIcomparelengthsMouse[[3]])
+cat("T-test remaining RI transcripts and coding transcripts:")
+t.test(RIcomparelengthsMouse[[2]],RIcomparelengthsMouse[[3]])
+```
+
+## Methionine density Distribution and two sided t-test between split-ORF encoding RI transcripts and coding transcripts
+
+
+```{r OutputDensityCodingMouseRI, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(RIdensitiesCompareMouse,ylab="Methionine density of transcript peptide sequence",outline = FALSE,main="Methionine density distribution of RI transcripts and coding transcripts")
+
+cat("T-test between split-ORF encoding and remaining RI transcripts:")
+t.test(RIdensitiesCompareMouse[[1]],RIdensitiesCompareMouse[[2]])
+cat("T-test between split-ORF encoding and coding transcripts:")
+t.test(RIdensitiesCompareMouse[[1]],RIdensitiesCompareMouse[[3]])
+cat("T-test remaining RI transcripts and coding transcripts:")
+t.test(RIdensitiesCompareMouse[[2]],RIdensitiesCompareMouse[[3]])
+```
