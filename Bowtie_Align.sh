@@ -2,14 +2,16 @@
 
 #Help message:
 usage="
-Usage: ./Bowtie_Align.sh [-options] numberOfThreads BowtieBaseName Reads.fastq out unique_regions.bed transcripts.fa
+Usage: ./Bowtie_Align.sh [-options] numberOfThreads BowtieBaseName Reads.fastq out unique_regions.bed exonAnnotation genomicAnnotation
 
 numberOfThreads 		Int setting the number of threads to use with BOWTIE2
 BowtieBaseName 			BaseName to use for creating BOWTIE2 Index files, or if allready created, BaseName of the existing index files
 Reads.fastq			Reads or transcripts that are to be aligned to the unique regions (can be fastq.gz)
 out					Base name of the output files
-unique_regions.bed	Bedfile with the annotated unique regions
+unique_regions.bed		BED-file containing the unique_DNA_regions up for validation
 transcripts.fa	fasta file with reference transcripts (NMD, RI etc.)
+exonAnnotation		BED-file containing the exon positions for all transcripts (ExonAnnotation_correct from the main pipeline)
+genomicAnnotation		BED-file containing the chromosome specific positions of all transcripts
 
 where:
 -h			show this help
@@ -27,7 +29,7 @@ while getopts ':hi' option; do
        exit 1
        ;;
 	i) echo "creating new index files"
-	   if [[ $# -ne 8 ]]; then #check for right number of arguments
+	   if [[ $# -ne 9 ]]; then #check for right number of arguments
 		echo -e "${RED}
 ERROR while executing the script!
 Wrong number of arguments.${NC}"
@@ -35,6 +37,9 @@ Wrong number of arguments.${NC}"
 		exit 1
 	   fi
        bowtie2-build --threads $3 $2 $4
+	   #echo $3
+	   #echo $2
+	   #echo $4
 	   ;;
    \?) printf "illegal option: -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -44,7 +49,7 @@ Wrong number of arguments.${NC}"
   shift 2
 done
 
-if [[ $# -ne 6 ]]; then #check for right number of arguments
+if [[ $# -ne 7 ]]; then #check for right number of arguments
   echo -e "${RED}
 ERROR while executing the script!
 Wrong number of arguments.${NC}"
@@ -57,28 +62,27 @@ bowtieBaseName=$2
 reads=$3
 out=$4.sam
 unique_regions=$5
-referencetranscripts=$6
+#referencetranscripts=$6
+exonAnnotation=$6
+genomicAnnotation=$7
+#echo $numberOfThreads
+#echo $bowtieBaseName
+#echo $reads
+#echo $out
+#echo $unique_regions
 
-#align the riboseq reads to the given transcripts(the BowtieBaseName)
-bowtie2 --threads $numberOfThreads -x $bowtieBaseName -U $reads -S $out
-
-#convert the sam file into a bamfile
 bamfile=$(echo $out | rev | cut -f 2- -d '.' | rev).bam
-samtools view -@ $numberOfThreads -S -b $out > $bamfile
-
-#convert the bamfile into a bedfile
+bowtie2 --threads $numberOfThreads -x $bowtieBaseName -U $reads | samtools view -@ $numberOfThreads -bS > $bamfile
 bedfile=$(echo $out | rev | cut -f 2- -d '.' | rev).bed
-echo "converting bam to bed"
+#echo "converting bam to bed"
 bedtools bamtobed -i $bamfile > $bedfile
-
-#determine the number of reads intersecting at least 33% with a unique region and sort the file accordingly
 intersectbedfile=$(echo $bedfile | rev | cut -f 2- -d '.' | rev)_intersect_counts.bed
-echo "intersecting with unique regions"
-bedtools intersect -c -F 0.33 -a $unique_regions -b $bedfile > $intersectbedfile
 sortedBedfile=$(echo $intersectbedfile | rev | cut -f 2- -d '.' | rev)_sorted.bed
-sort -k 5 -r -n $intersectbedfile > $sortedBedfile
-
-#sort the bamfile and determine the coverage of the aligning reads
+echo "intersecting with unique regions"
+bedtools intersect -c -F 0.33 -a $unique_regions -b $bedfile | sort -k 5 -r -n > $sortedBedfile
+intersectbedfilerelative=$(echo $intersectbedfile | rev | cut -f 2- -d '.' | rev)_relative.bed
+intersectbedfilerelativesorted=$(echo $intersectbedfilerelative | rev | cut -f 2- -d '.' | rev)_sorted.bed
+cat $sortedBedfile | awk -v OFS='\t' '{print $1,$2,$3,$4,$5,$5/($3-$2)}' | sort -n -r -k 6 > $intersectbedfilerelativesorted
 echo "sorting bamfile and indexing"
 sortedbamfile=$(echo $bamfile | rev | cut -f 2- -d '.' | rev)_sorted.bam
 samtools sort -@ 10 $bamfile > $sortedbamfile
@@ -86,19 +90,28 @@ samtools index -@ 10 $sortedbamfile
 echo "calculating coverage"
 bigwigfile=$(echo $bamfile | rev | cut -f 2- -d '.' | rev)_coverage.bigwig
 bamCoverage -p max/2 -b $sortedbamfile -o $bigwigfile -of bigwig
+bedgraphfile=$(echo $bamfile | rev | cut -f 2- -d '.' | rev)_coverage.bedgraph
+bamCoverage -p max/2 -b $sortedbamfile -o $bedgraphfile -of bedgraph
+echo "Converting bedgraph to UCSC format"
+bedgraphfilecorrect=$(echo $bedgraphfile | rev | cut -f 2- -d '.' | rev)_actual_positions.bed
+bedgraphfileOutChr=$(echo $bedgraphfile | rev | cut -f 2- -d '.' | rev)_genomic_with_chr.bed
+python ./PipeTest/Pipeline/Genomic_scripts/AddExonPositions_bedgraph.py $exonAnnotation $bedgraphfile $bedgraphfilecorrect
+python ./PipeTest/Pipeline/Genomic_scripts/GenomicBedgraph.py $genomicAnnotation $bedgraphfilecorrect $bedgraphfileOutChr
+source ./PipeTest/Pipeline/Genomic_scripts/GenomicToUCSC_bedgraph.sh $bedgraphfileOutChr
+#echo "adding relative intersection"
+#coveragebedfile=$(echo $bedfile | rev | cut -f 2- -d '.' | rev)_coverage_counts.bed
+#bedtools coverage -F 0.33 -a $unique_regions -b $bedfile > $coveragebedfile
+#coveragebedfilesorted=$(echo $bedfile | rev | cut -f 2- -d '.' | rev)_coverage_counts_sorted.bed
+#sort -k 7 -r -n $coveragebedfile > $coveragebedfilesorted
+#randomfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_background_regions.bed
+#python ./PipeTest/Pipeline/Uniqueness_scripts/BackgroundRegions.py $unique_regions $referencetranscripts $randomfile
+#randomintersectfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_intersect_counts.bed
+#bedtools intersect -c -F 0.33 -a $randomfile -b $bedfile > $randomintersectfile
+#randomintersectfilerelative=$(echo $randomintersectfile | rev | cut -f 2- -d '.' | rev)_relative.bed
+#randomintersectfilesorted=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_intersect_counts_relative_sorted.bed
+#cat $randomintersectfile | awk -v OFS='\t' '{print $1,$2,$3,$4,$4/($3-$2)}' | sort -n -r -k 5 > $randomintersectfilesorted
 
-#calculate the relative read count (number of aligning reads / length of unique region) and sort according to relative read count
-intersectbedfilerelative=$(echo $intersectbedfile | rev | cut -f 2- -d '.' | rev)_relative.bed
-cat $intersectbedfile | awk -v OFS='\t' '{print $1,$2,$3,$4,$5,$5/($3-$2)}' > $intersectbedfilerelative
-intersectbedfilerelativesorted=$(echo $intersectbedfilerelative | rev | cut -f 2- -d '.' | rev)_sorted.bed
-sort -n -r -k 6 $intersectbedfilerelative > $intersectbedfilerelativesorted
-
-#create a file with random regions of the same length distribution as original unique regions and again determine read count and relative read count
-randomfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_background_regions.bed
-python ./PipeTest/Pipeline/Uniqueness_scripts/BackgroundRegions.py $unique_regions $referencetranscripts $randomfile
-randomintersectfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_intersect_counts.bed
-bedtools intersect -c -F 0.33 -a $randomfile -b $bedfile > $randomintersectfile
-randomintersectfilerelative=$(echo $randomintersectfile | rev | cut -f 2- -d '.' | rev)_relative.bed
-cat $randomintersectfile | awk -v OFS='\t' '{print $1,$2,$3,$4,$4/($3-$2)}' > $randomintersectfilerelative
-randomintersectfilesorted=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_intersect_counts_relative_sorted.bed
-sort -n -r -k 5 $randomintersectfilerelative > $randomintersectfilesorted
+#echo $bamfile
+#echo $bedfile
+#echo $intersectbedfile
+#echo $sortedBedfile

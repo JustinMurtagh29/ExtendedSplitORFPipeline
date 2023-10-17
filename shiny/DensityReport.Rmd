@@ -5,794 +5,291 @@ output:
     df_print: paged
 ---
 
+```{r Preparation, echo=FALSE,warning=FALSE}
+library(ggplot2)
+library(ggpubr)
+
+createBoxplot <- function(list, AAname, type="UR"){
+    firstORF <- data.frame(orfNum = "First ORF", OrfDensity = list$`First ORF`)
+    secondORF <- data.frame(orfNum = "Second ORF", OrfDensity = list$`Second ORF`)
+    thirdORF <- data.frame(orfNum = "Third ORF", OrfDensity = list$`Third ORF`)
+    coding <- data.frame(orfNum = "Coding transcripts", OrfDensity = list$`Coding transcripts`)
+    if(length(list)==4){
+      plot.data <- rbind(firstORF,secondORF,thirdORF,coding)
+  
+      my_comparisons <- list( c("First ORF", "Second ORF"), c("First ORF", "Third ORF"), c ("First ORF", "Coding transcripts"), c("Second ORF", "Third ORF"), c("Second ORF", "Coding transcripts"), c("Third ORF", "Coding transcripts"))
+    }
+    if(length(list)==5){
+      fourthORF <- data.frame(orfNum = "Fourth ORF", OrfDensity = list$`Fourth ORF`)
+      
+      plot.data <- rbind(firstORF,secondORF,thirdORF,fourthORF,coding)
+      
+      my_comparisons <- list( c("First ORF", "Second ORF"), c("First ORF", "Third ORF"),c("First ORF", "Fourth ORF"), c ("First ORF", "Coding transcripts"), c("Second ORF", "Third ORF"),c("Second ORF", "Fourth ORF"), c("Second ORF", "Coding transcripts"), c("Third ORF", "Fourth ORF"), c("Third ORF", "Coding transcripts"),c("Fourth ORF", "Coding transcripts"))
+    }
+    if(length(list)==6){
+      fourthORF <- data.frame(orfNum = "Fourth ORF", OrfDensity = list$`Fourth ORF`)
+      fifthORF <- data.frame(orfNum = "Fifth ORF", OrfDensity = list$`Fifth ORF`)
+      
+      plot.data <- rbind(firstORF,secondORF,thirdORF,fourthORF,fifthORF,coding)
+      
+      my_comparisons <- list( c("First ORF", "Second ORF"), c("First ORF", "Third ORF"),c("First ORF", "Fourth ORF"),c("First ORF", "Fifth ORF"), c ("First ORF", "Coding transcripts"), c("Second ORF", "Third ORF"),c("Second ORF", "Fourth ORF"),c("Second ORF", "Fifth ORF"), c("Second ORF", "Coding transcripts"), c("Third ORF", "Fourth ORF"),c("Third ORF", "Fifth ORF"), c("Third ORF", "Coding transcripts"),c("Fourth ORF", "Fifth ORF"),c("Fourth ORF", "Coding transcripts"),c("Fifth ORF", "Coding transcripts"))
+    }
+  
+  if(type=="c"){
+    print(ggplot(plot.data, aes(x=orfNum, y=OrfDensity, fill=orfNum)) + geom_boxplot() +  xlab("Set") + ylab (paste0(AAname," density\n"))+ labs(fill = "Set") + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())+geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + expand_limits(x = 0, y = 0) + ggtitle(paste0(AAname," density for complete ORFs and protein coding transcripts"))+stat_compare_means(comparisons = my_comparisons) + stat_compare_means(label.y = -0.05,label.x = 1))
+  }
+  else{
+    print(ggplot(plot.data, aes(x=orfNum, y=OrfDensity, fill=orfNum)) + geom_boxplot() +  xlab("Set") + ylab (paste0(AAname," density\n"))+ labs(fill = "Set") + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())+geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + expand_limits(x = 0, y = 0) + ggtitle(paste0(AAname," density for unique regions and protein coding transcripts"))+stat_compare_means(comparisons = my_comparisons) + stat_compare_means(label.y = -0.05,label.x = 1))
+  }
+}
+
+names=c("Alanine","Arginine","Asparagine","Aspartic acid", "Cysteine", "Glutamine", "Glycine", "Glutamic acid", "Histidine", "Isoleucine", "Leucine", "Lysine","Methionine","Phenylalanine","Proline","Serine","Threonine","Tryptophan","Tyrosine","Valine")
+```
+
 # Human
 
 ### NMD
 
-```{r setupHumanNMDMouse, echo=FALSE, out.width="50%", warning=FALSE}
-NMDDenseFirst=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/All_AA_density_first_ORF.tsv',
+#### Complete ORFs
+
+```{r HumanNMD, echo=FALSE, out.width="50%", warning=FALSE}
+
+NMDDenseFirstOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_first_ORF.tsv',
   sep = '\t', header = TRUE)
-
-NMDDenseSecond=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/All_AA_density_second_ORF.tsv',
+NMDDenseSecondOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_second_ORF.tsv',
   sep = '\t', header = TRUE)
-
-
-RIDenseFirst=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/All_AA_density_first_ORF.tsv',
+NMDDenseThirdOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_third_ORF.tsv',
   sep = '\t', header = TRUE)
-
-RIDenseSecond=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/All_AA_density_second_ORF.tsv',
+NMDDenseFourthOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_fourth_ORF.tsv',
   sep = '\t', header = TRUE)
-
 
 CodingDense=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/All_AA_density.tsv',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/All_AA_density.tsv',
   sep = '\t', header = TRUE)
 
-NMDdensitiesA = c("First ORF" = list(NMDDenseFirst[,2]),"Second ORF" = list(NMDDenseSecond[,2]),"Coding transcripts" = list(CodingDense[,2]))
-NMDdensitiesR = c("First ORF" = list(NMDDenseFirst[,3]),"Second ORF" = list(NMDDenseSecond[,3]),"Coding transcripts" = list(CodingDense[,3]))
-NMDdensitiesN = c("First ORF" = list(NMDDenseFirst[,4]),"Second ORF" = list(NMDDenseSecond[,4]),"Coding transcripts" = list(CodingDense[,4]))
-NMDdensitiesD = c("First ORF" = list(NMDDenseFirst[,5]),"Second ORF" = list(NMDDenseSecond[,5]),"Coding transcripts" = list(CodingDense[,5]))
-NMDdensitiesC = c("First ORF" = list(NMDDenseFirst[,6]),"Second ORF" = list(NMDDenseSecond[,6]),"Coding transcripts" = list(CodingDense[,6]))
-NMDdensitiesQ = c("First ORF" = list(NMDDenseFirst[,7]),"Second ORF" = list(NMDDenseSecond[,7]),"Coding transcripts" = list(CodingDense[,7]))
-NMDdensitiesG = c("First ORF" = list(NMDDenseFirst[,8]),"Second ORF" = list(NMDDenseSecond[,8]),"Coding transcripts" = list(CodingDense[,8]))
-NMDdensitiesE = c("First ORF" = list(NMDDenseFirst[,9]),"Second ORF" = list(NMDDenseSecond[,9]),"Coding transcripts" = list(CodingDense[,9]))
-NMDdensitiesH = c("First ORF" = list(NMDDenseFirst[,10]),"Second ORF" = list(NMDDenseSecond[,10]),"Coding transcripts" = list(CodingDense[,10]))
-NMDdensitiesI = c("First ORF" = list(NMDDenseFirst[,11]),"Second ORF" = list(NMDDenseSecond[,11]),"Coding transcripts" = list(CodingDense[,11]))
-NMDdensitiesL = c("First ORF" = list(NMDDenseFirst[,12]),"Second ORF" = list(NMDDenseSecond[,12]),"Coding transcripts" = list(CodingDense[,12]))
-NMDdensitiesK = c("First ORF" = list(NMDDenseFirst[,13]),"Second ORF" = list(NMDDenseSecond[,13]),"Coding transcripts" = list(CodingDense[,13]))
-NMDdensitiesM = c("First ORF" = list(NMDDenseFirst[,14]),"Second ORF" = list(NMDDenseSecond[,14]),"Coding transcripts" = list(CodingDense[,14]))
-NMDdensitiesF = c("First ORF" = list(NMDDenseFirst[,15]),"Second ORF" = list(NMDDenseSecond[,15]),"Coding transcripts" = list(CodingDense[,15]))
-NMDdensitiesP = c("First ORF" = list(NMDDenseFirst[,16]),"Second ORF" = list(NMDDenseSecond[,16]),"Coding transcripts" = list(CodingDense[,16]))
-NMDdensitiesS = c("First ORF" = list(NMDDenseFirst[,17]),"Second ORF" = list(NMDDenseSecond[,17]),"Coding transcripts" = list(CodingDense[,17]))
-NMDdensitiesT = c("First ORF" = list(NMDDenseFirst[,18]),"Second ORF" = list(NMDDenseSecond[,18]),"Coding transcripts" = list(CodingDense[,18]))
-NMDdensitiesW = c("First ORF" = list(NMDDenseFirst[,19]),"Second ORF" = list(NMDDenseSecond[,19]),"Coding transcripts" = list(CodingDense[,19]))
-NMDdensitiesY = c("First ORF" = list(NMDDenseFirst[,20]),"Second ORF" = list(NMDDenseSecond[,20]),"Coding transcripts" = list(CodingDense[,20]))
-NMDdensitiesV = c("First ORF" = list(NMDDenseFirst[,21]),"Second ORF" = list(NMDDenseSecond[,21]),"Coding transcripts" = list(CodingDense[,21]))
+NMDdensitiesOrf=list()
+for(i in 1:20){
+  NMDdensitiesOrf=c(NMDdensitiesOrf,list(c("First ORF" = list(NMDDenseFirstOrf[,i+1]),"Second ORF" = list(NMDDenseSecondOrf[,i+1]),"Third ORF" = list(NMDDenseThirdOrf[,i+1]),"Fourth ORF" = list(NMDDenseFourthOrf[,i+1]),"Coding transcripts" = list(CodingDense[,i+1]))))
+}
 
-#par(mfrow=c(10,2))
+for(i in 1:20){
+  createBoxplot(NMDdensitiesOrf[[i]],names[[i]],"c")
+}
 
-
-boxplot(NMDdensitiesA,ylab="Density",outline = FALSE, main = "Alanine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesR,ylab="Density",outline = FALSE, main = "Arginine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesN,ylab="Density",outline = FALSE, main = "Asparagine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesD,ylab="Density",outline = FALSE, main = "Aspartic acid density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesC,ylab="Density",outline = FALSE, main = "Cysteine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesQ,ylab="Density",outline = FALSE, main = "Glutamine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesG,ylab="Density",outline = FALSE, main = "Glycine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesE,ylab="Density",outline = FALSE, main = "Glutamic acid density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesH,ylab="Density",outline = FALSE, main = "Histidine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesI,ylab="Density",outline = FALSE, main = "Isoleucine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesL,ylab="Density",outline = FALSE, main = "Leucine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesK,ylab="Density",outline = FALSE, main = "Lysine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesM,ylab="Density",outline = FALSE, main = "Methionine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesF,ylab="Density",outline = FALSE, main = "Phenylalanine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesP,ylab="Density",outline = FALSE, main = "Proline density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesS,ylab="Density",outline = FALSE, main = "Serine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesT,ylab="Density",outline = FALSE, main = "Threonine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesW,ylab="Density",outline = FALSE, main = "Tryptophan density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesY,ylab="Density",outline = FALSE, main = "Tyrosine density for unique regions and protein coding transcripts")
-boxplot(NMDdensitiesV,ylab="Density",outline = FALSE, main = "Valine density for unique regions and protein coding transcripts")
 ```
 
-### T-test between unique Protein Regions in first ORF and unique Protein Regions in second ORF:
+#### Unique regions
 
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDdensitiesA[[1]],NMDdensitiesA[[2]])
-cat("Arginine")
-t.test(NMDdensitiesR[[1]],NMDdensitiesR[[2]])
-cat("Asparagine")
-t.test(NMDdensitiesN[[1]],NMDdensitiesN[[2]])
-cat("Aspartic acid")
-t.test(NMDdensitiesD[[1]],NMDdensitiesD[[2]])
-cat("Cysteine")
-t.test(NMDdensitiesC[[1]],NMDdensitiesC[[2]])
-cat("Glutamine")
-t.test(NMDdensitiesQ[[1]],NMDdensitiesQ[[2]])
-cat("Glycine")
-t.test(NMDdensitiesG[[1]],NMDdensitiesG[[2]])
-cat("Glutamic acid")
-t.test(NMDdensitiesE[[1]],NMDdensitiesE[[2]])
-cat("Histidine")
-t.test(NMDdensitiesH[[1]],NMDdensitiesH[[2]])
-cat("Isoleucine")
-t.test(NMDdensitiesI[[1]],NMDdensitiesI[[2]])
-cat("Leucine")
-t.test(NMDdensitiesL[[1]],NMDdensitiesL[[2]])
-cat("Lysine")
-t.test(NMDdensitiesK[[1]],NMDdensitiesK[[2]])
-cat("Methionine")
-t.test(NMDdensitiesM[[1]],NMDdensitiesM[[2]])
-cat("Phenylalanine")
-t.test(NMDdensitiesF[[1]],NMDdensitiesF[[2]])
-cat("Proline")
-t.test(NMDdensitiesP[[1]],NMDdensitiesP[[2]])
-cat("Serine")
-t.test(NMDdensitiesS[[1]],NMDdensitiesS[[2]])
-cat("Threonine")
-t.test(NMDdensitiesT[[1]],NMDdensitiesT[[2]])
-cat("Tryptophan")
-t.test(NMDdensitiesW[[1]],NMDdensitiesW[[2]])
-cat("Tyrosine")
-t.test(NMDdensitiesY[[1]],NMDdensitiesY[[2]])
-cat("Valine")
-t.test(NMDdensitiesV[[1]],NMDdensitiesV[[2]])
+```{r HumanNMDunique, echo=FALSE, out.width="50%", warning=FALSE}
+
+NMDDenseFirst=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_first_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+NMDDenseSecond=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_second_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+NMDDenseThird=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/NMD/All_AA_density_third_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+
+names=c("Alanine","Arginine","Asparagine","Aspartic acid", "Cysteine", "Glutamine", "Glycine", "Glutamic acid", "Histidine", "Isoleucine", "Leucine", "Lysine","Methionine","Phenylalanine","Proline","Serine","Threonine","Tryptophan","Tyrosine","Valine")
+NMDdensities=list()
+for(i in 1:20){
+  NMDdensities=c(NMDdensities,list(c("First ORF" = list(NMDDenseFirst[,i+1]),"Second ORF" = list(NMDDenseSecond[,i+1]),"Third ORF" = list(NMDDenseThird[,i+1]),"Coding transcripts" = list(CodingDense[,i+1]))))
+}
+
+for(i in 1:20){
+  createBoxplot(NMDdensities[[i]],names[[i]])
+}
+
 ```
 
-### T-test between unique Protein Regions in first ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDdensitiesA[[1]],NMDdensitiesA[[3]])
-cat("Arginine")
-t.test(NMDdensitiesR[[1]],NMDdensitiesR[[3]])
-cat("Asparagine")
-t.test(NMDdensitiesN[[1]],NMDdensitiesN[[3]])
-cat("Aspartic acid")
-t.test(NMDdensitiesD[[1]],NMDdensitiesD[[3]])
-cat("Cysteine")
-t.test(NMDdensitiesC[[1]],NMDdensitiesC[[3]])
-cat("Glutamine")
-t.test(NMDdensitiesQ[[1]],NMDdensitiesQ[[3]])
-cat("Glycine")
-t.test(NMDdensitiesG[[1]],NMDdensitiesG[[3]])
-cat("Glutamic acid")
-t.test(NMDdensitiesE[[1]],NMDdensitiesE[[3]])
-cat("Histidine")
-t.test(NMDdensitiesH[[1]],NMDdensitiesH[[3]])
-cat("Isoleucine")
-t.test(NMDdensitiesI[[1]],NMDdensitiesI[[3]])
-cat("Leucine")
-t.test(NMDdensitiesL[[1]],NMDdensitiesL[[3]])
-cat("Lysine")
-t.test(NMDdensitiesK[[1]],NMDdensitiesK[[3]])
-cat("Methionine")
-t.test(NMDdensitiesM[[1]],NMDdensitiesM[[3]])
-cat("Phenylalanine")
-t.test(NMDdensitiesF[[1]],NMDdensitiesF[[3]])
-cat("Proline")
-t.test(NMDdensitiesP[[1]],NMDdensitiesP[[3]])
-cat("Serine")
-t.test(NMDdensitiesS[[1]],NMDdensitiesS[[3]])
-cat("Threonine")
-t.test(NMDdensitiesT[[1]],NMDdensitiesT[[3]])
-cat("Tryptophan")
-t.test(NMDdensitiesW[[1]],NMDdensitiesW[[3]])
-cat("Tyrosine")
-t.test(NMDdensitiesY[[1]],NMDdensitiesY[[3]])
-cat("Valine")
-t.test(NMDdensitiesV[[1]],NMDdensitiesV[[3]])
-```
-
-### T-test between unique Protein Regions in second ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDdensitiesA[[2]],NMDdensitiesA[[3]])
-cat("Arginine")
-t.test(NMDdensitiesR[[2]],NMDdensitiesR[[3]])
-cat("Asparagine")
-t.test(NMDdensitiesN[[2]],NMDdensitiesN[[3]])
-cat("Aspartic acid")
-t.test(NMDdensitiesD[[2]],NMDdensitiesD[[3]])
-cat("Cysteine")
-t.test(NMDdensitiesC[[2]],NMDdensitiesC[[3]])
-cat("Glutamine")
-t.test(NMDdensitiesQ[[2]],NMDdensitiesQ[[3]])
-cat("Glycine")
-t.test(NMDdensitiesG[[2]],NMDdensitiesG[[3]])
-cat("Glutamic acid")
-t.test(NMDdensitiesE[[2]],NMDdensitiesE[[3]])
-cat("Histidine")
-t.test(NMDdensitiesH[[2]],NMDdensitiesH[[3]])
-cat("Isoleucine")
-t.test(NMDdensitiesI[[2]],NMDdensitiesI[[3]])
-cat("Leucine")
-t.test(NMDdensitiesL[[2]],NMDdensitiesL[[3]])
-cat("Lysine")
-t.test(NMDdensitiesK[[2]],NMDdensitiesK[[3]])
-cat("Methionine")
-t.test(NMDdensitiesM[[2]],NMDdensitiesM[[3]])
-cat("Phenylalanine")
-t.test(NMDdensitiesF[[2]],NMDdensitiesF[[3]])
-cat("Proline")
-t.test(NMDdensitiesP[[2]],NMDdensitiesP[[3]])
-cat("Serine")
-t.test(NMDdensitiesS[[2]],NMDdensitiesS[[3]])
-cat("Threonine")
-t.test(NMDdensitiesT[[2]],NMDdensitiesT[[3]])
-cat("Tryptophan")
-t.test(NMDdensitiesW[[2]],NMDdensitiesW[[3]])
-cat("Tyrosine")
-t.test(NMDdensitiesY[[2]],NMDdensitiesY[[3]])
-cat("Valine")
-t.test(NMDdensitiesV[[2]],NMDdensitiesV[[3]])
-```
 
 ### RI
 
+#### Complete ORFs
 
-```{r setupHumanRI, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
-RIdensitiesA = c("First ORF" = list(RIDenseFirst[,2]),"Second ORF" = list(RIDenseSecond[,2]),"Coding transcripts" = list(CodingDense[,2]))
-RIdensitiesR = c("First ORF" = list(RIDenseFirst[,3]),"Second ORF" = list(RIDenseSecond[,3]),"Coding transcripts" = list(CodingDense[,3]))
-RIdensitiesN = c("First ORF" = list(RIDenseFirst[,4]),"Second ORF" = list(RIDenseSecond[,4]),"Coding transcripts" = list(CodingDense[,4]))
-RIdensitiesD = c("First ORF" = list(RIDenseFirst[,5]),"Second ORF" = list(RIDenseSecond[,5]),"Coding transcripts" = list(CodingDense[,5]))
-RIdensitiesC = c("First ORF" = list(RIDenseFirst[,6]),"Second ORF" = list(RIDenseSecond[,6]),"Coding transcripts" = list(CodingDense[,6]))
-RIdensitiesQ = c("First ORF" = list(RIDenseFirst[,7]),"Second ORF" = list(RIDenseSecond[,7]),"Coding transcripts" = list(CodingDense[,7]))
-RIdensitiesG = c("First ORF" = list(RIDenseFirst[,8]),"Second ORF" = list(RIDenseSecond[,8]),"Coding transcripts" = list(CodingDense[,8]))
-RIdensitiesE = c("First ORF" = list(RIDenseFirst[,9]),"Second ORF" = list(RIDenseSecond[,9]),"Coding transcripts" = list(CodingDense[,9]))
-RIdensitiesH = c("First ORF" = list(RIDenseFirst[,10]),"Second ORF" = list(RIDenseSecond[,10]),"Coding transcripts" = list(CodingDense[,10]))
-RIdensitiesI = c("First ORF" = list(RIDenseFirst[,11]),"Second ORF" = list(RIDenseSecond[,11]),"Coding transcripts" = list(CodingDense[,11]))
-RIdensitiesL = c("First ORF" = list(RIDenseFirst[,12]),"Second ORF" = list(RIDenseSecond[,12]),"Coding transcripts" = list(CodingDense[,12]))
-RIdensitiesK = c("First ORF" = list(RIDenseFirst[,13]),"Second ORF" = list(RIDenseSecond[,13]),"Coding transcripts" = list(CodingDense[,13]))
-RIdensitiesM = c("First ORF" = list(RIDenseFirst[,14]),"Second ORF" = list(RIDenseSecond[,14]),"Coding transcripts" = list(CodingDense[,14]))
-RIdensitiesF = c("First ORF" = list(RIDenseFirst[,15]),"Second ORF" = list(RIDenseSecond[,15]),"Coding transcripts" = list(CodingDense[,15]))
-RIdensitiesP = c("First ORF" = list(RIDenseFirst[,16]),"Second ORF" = list(RIDenseSecond[,16]),"Coding transcripts" = list(CodingDense[,16]))
-RIdensitiesS = c("First ORF" = list(RIDenseFirst[,17]),"Second ORF" = list(RIDenseSecond[,17]),"Coding transcripts" = list(CodingDense[,17]))
-RIdensitiesT = c("First ORF" = list(RIDenseFirst[,18]),"Second ORF" = list(RIDenseSecond[,18]),"Coding transcripts" = list(CodingDense[,18]))
-RIdensitiesW = c("First ORF" = list(RIDenseFirst[,19]),"Second ORF" = list(RIDenseSecond[,19]),"Coding transcripts" = list(CodingDense[,19]))
-RIdensitiesY = c("First ORF" = list(RIDenseFirst[,20]),"Second ORF" = list(RIDenseSecond[,20]),"Coding transcripts" = list(CodingDense[,20]))
-RIdensitiesV = c("First ORF" = list(RIDenseFirst[,21]),"Second ORF" = list(RIDenseSecond[,21]),"Coding transcripts" = list(CodingDense[,21]))
+```{r HumanRI, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
 
-#par(mfrow=c(10,2))
+RIDenseFirstOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_first_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIDenseSecondOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_second_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIDenseThirdOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_third_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIDenseFourthOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_fourth_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIDenseFifthOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_fifth_ORF.tsv',
+  sep = '\t', header = TRUE)
 
+RIdensitiesOrf=list()
+for(i in 1:20){
+  RIdensitiesOrf=c(RIdensitiesOrf,list(c("First ORF" = list(RIDenseFirstOrf[,i+1]),"Second ORF" = list(RIDenseSecondOrf[,i+1]),"Third ORF" = list(RIDenseThirdOrf[,i+1]),"Fourth ORF" = list(RIDenseFourthOrf[,i+1]),"Fifth ORF" = list(RIDenseFifthOrf[,i+1]),"Coding transcripts" = list(CodingDense[,i+1]))))
+}
 
-boxplot(RIdensitiesA,ylab="Density",outline = FALSE, main = "Alanine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesR,ylab="Density",outline = FALSE, main = "Arginine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesN,ylab="Density",outline = FALSE, main = "Asparagine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesD,ylab="Density",outline = FALSE, main = "Aspartic acid density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesC,ylab="Density",outline = FALSE, main = "Cysteine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesQ,ylab="Density",outline = FALSE, main = "Glutamine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesG,ylab="Density",outline = FALSE, main = "Glycine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesE,ylab="Density",outline = FALSE, main = "Glutamic acid density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesH,ylab="Density",outline = FALSE, main = "Histidine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesI,ylab="Density",outline = FALSE, main = "Isoleucine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesL,ylab="Density",outline = FALSE, main = "Leucine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesK,ylab="Density",outline = FALSE, main = "Lysine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesM,ylab="Density",outline = FALSE, main = "Methionine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesF,ylab="Density",outline = FALSE, main = "Phenylalanine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesP,ylab="Density",outline = FALSE, main = "Proline density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesS,ylab="Density",outline = FALSE, main = "Serine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesT,ylab="Density",outline = FALSE, main = "Threonine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesW,ylab="Density",outline = FALSE, main = "Tryptophan density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesY,ylab="Density",outline = FALSE, main = "Tyrosine density for unique regions and protein coding transcripts")
-boxplot(RIdensitiesV,ylab="Density",outline = FALSE, main = "Valine density for unique regions and protein coding transcripts")
+for(i in 1:20){
+  createBoxplot(RIdensitiesOrf[[i]],names[[i]],"c")
+}
+
 ```
 
-### T-test between unique Protein Regions in first ORF and unique Protein Regions in second ORF:
+#### Unique regions
 
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIdensitiesA[[1]],RIdensitiesA[[2]])
-cat("Arginine")
-t.test(RIdensitiesR[[1]],RIdensitiesR[[2]])
-cat("Asparagine")
-t.test(RIdensitiesN[[1]],RIdensitiesN[[2]])
-cat("Aspartic acid")
-t.test(RIdensitiesD[[1]],RIdensitiesD[[2]])
-cat("Cysteine")
-t.test(RIdensitiesC[[1]],RIdensitiesC[[2]])
-cat("Glutamine")
-t.test(RIdensitiesQ[[1]],RIdensitiesQ[[2]])
-cat("Glycine")
-t.test(RIdensitiesG[[1]],RIdensitiesG[[2]])
-cat("Glutamic acid")
-t.test(RIdensitiesE[[1]],RIdensitiesE[[2]])
-cat("Histidine")
-t.test(RIdensitiesH[[1]],RIdensitiesH[[2]])
-cat("Isoleucine")
-t.test(RIdensitiesI[[1]],RIdensitiesI[[2]])
-cat("Leucine")
-t.test(RIdensitiesL[[1]],RIdensitiesL[[2]])
-cat("Lysine")
-t.test(RIdensitiesK[[1]],RIdensitiesK[[2]])
-cat("Methionine")
-t.test(RIdensitiesM[[1]],RIdensitiesM[[2]])
-cat("Phenylalanine")
-t.test(RIdensitiesF[[1]],RIdensitiesF[[2]])
-cat("Proline")
-t.test(RIdensitiesP[[1]],RIdensitiesP[[2]])
-cat("Serine")
-t.test(RIdensitiesS[[1]],RIdensitiesS[[2]])
-cat("Threonine")
-t.test(RIdensitiesT[[1]],RIdensitiesT[[2]])
-cat("Tryptophan")
-t.test(RIdensitiesW[[1]],RIdensitiesW[[2]])
-cat("Tyrosine")
-t.test(RIdensitiesY[[1]],RIdensitiesY[[2]])
-cat("Valine")
-t.test(RIdensitiesV[[1]],RIdensitiesV[[2]])
+```{r HumanRIunique, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
+
+RIDenseFirst=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_first_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIDenseSecond=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_second_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIDenseThird=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_third_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIDenseFourth=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_fourth_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIDenseFifth=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Human/RI/All_AA_density_fifth_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+
+RIdensities=list()
+for(i in 1:20){
+  RIdensities=c(RIdensities,list(c("First ORF" = list(RIDenseFirst[,i+1]),"Second ORF" = list(RIDenseSecond[,i+1]),"Third ORF" = list(RIDenseThird[,i+1]),"Fourth ORF" = list(RIDenseFourth[,i+1]),"Fifth ORF" = list(RIDenseFifth[,i+1]),"Coding transcripts" = list(CodingDense[,i+1]))))
+}
+
+for(i in 1:20){
+  createBoxplot(RIdensities[[i]],names[[i]])
+}
+
 ```
-
-
-### T-test between unique Protein Regions in first ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIdensitiesA[[1]],RIdensitiesA[[3]])
-cat("Arginine")
-t.test(RIdensitiesR[[1]],RIdensitiesR[[3]])
-cat("Asparagine")
-t.test(RIdensitiesN[[1]],RIdensitiesN[[3]])
-cat("Aspartic acid")
-t.test(RIdensitiesD[[1]],RIdensitiesD[[3]])
-cat("Cysteine")
-t.test(RIdensitiesC[[1]],RIdensitiesC[[3]])
-cat("Glutamine")
-t.test(RIdensitiesQ[[1]],RIdensitiesQ[[3]])
-cat("Glycine")
-t.test(RIdensitiesG[[1]],RIdensitiesG[[3]])
-cat("Glutamic acid")
-t.test(RIdensitiesE[[1]],RIdensitiesE[[3]])
-cat("Histidine")
-t.test(RIdensitiesH[[1]],RIdensitiesH[[3]])
-cat("Isoleucine")
-t.test(RIdensitiesI[[1]],RIdensitiesI[[3]])
-cat("Leucine")
-t.test(RIdensitiesL[[1]],RIdensitiesL[[3]])
-cat("Lysine")
-t.test(RIdensitiesK[[1]],RIdensitiesK[[3]])
-cat("Methionine")
-t.test(RIdensitiesM[[1]],RIdensitiesM[[3]])
-cat("Phenylalanine")
-t.test(RIdensitiesF[[1]],RIdensitiesF[[3]])
-cat("Proline")
-t.test(RIdensitiesP[[1]],RIdensitiesP[[3]])
-cat("Serine")
-t.test(RIdensitiesS[[1]],RIdensitiesS[[3]])
-cat("Threonine")
-t.test(RIdensitiesT[[1]],RIdensitiesT[[3]])
-cat("Tryptophan")
-t.test(RIdensitiesW[[1]],RIdensitiesW[[3]])
-cat("Tyrosine")
-t.test(RIdensitiesY[[1]],RIdensitiesY[[3]])
-cat("Valine")
-t.test(RIdensitiesV[[1]],RIdensitiesV[[3]])
-```
-
-
-### T-test between unique Protein Regions in second ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIdensitiesA[[2]],RIdensitiesA[[3]])
-cat("Arginine")
-t.test(RIdensitiesR[[2]],RIdensitiesR[[3]])
-cat("Asparagine")
-t.test(RIdensitiesN[[2]],RIdensitiesN[[3]])
-cat("Aspartic acid")
-t.test(RIdensitiesD[[2]],RIdensitiesD[[3]])
-cat("Cysteine")
-t.test(RIdensitiesC[[2]],RIdensitiesC[[3]])
-cat("Glutamine")
-t.test(RIdensitiesQ[[2]],RIdensitiesQ[[3]])
-cat("Glycine")
-t.test(RIdensitiesG[[2]],RIdensitiesG[[3]])
-cat("Glutamic acid")
-t.test(RIdensitiesE[[2]],RIdensitiesE[[3]])
-cat("Histidine")
-t.test(RIdensitiesH[[2]],RIdensitiesH[[3]])
-cat("Isoleucine")
-t.test(RIdensitiesI[[2]],RIdensitiesI[[3]])
-cat("Leucine")
-t.test(RIdensitiesL[[2]],RIdensitiesL[[3]])
-cat("Lysine")
-t.test(RIdensitiesK[[2]],RIdensitiesK[[3]])
-cat("Methionine")
-t.test(RIdensitiesM[[2]],RIdensitiesM[[3]])
-cat("Phenylalanine")
-t.test(RIdensitiesF[[2]],RIdensitiesF[[3]])
-cat("Proline")
-t.test(RIdensitiesP[[2]],RIdensitiesP[[3]])
-cat("Serine")
-t.test(RIdensitiesS[[2]],RIdensitiesS[[3]])
-cat("Threonine")
-t.test(RIdensitiesT[[2]],RIdensitiesT[[3]])
-cat("Tryptophan")
-t.test(RIdensitiesW[[2]],RIdensitiesW[[3]])
-cat("Tyrosine")
-t.test(RIdensitiesY[[2]],RIdensitiesY[[3]])
-cat("Valine")
-t.test(RIdensitiesV[[2]],RIdensitiesV[[3]])
-```
-
 
 
 # Mouse
 
 ### NMD
 
-```{r setupMouseNMD, echo=FALSE, out.width="50%", warning=FALSE}
-NMDMouseDenseFirst=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/All_AA_density_first_ORF.tsv',
+#### Complete ORFs
+
+```{r MouseNMD, echo=FALSE, out.width="50%", warning=FALSE}
+
+NMDMouseDenseFirstOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_first_ORF.tsv',
   sep = '\t', header = TRUE)
-
-NMDMouseDenseSecond=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/All_AA_density_second_ORF.tsv',
+NMDMouseDenseSecondOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_second_ORF.tsv',
   sep = '\t', header = TRUE)
-
-
-RIMouseDenseFirst=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/All_AA_density_first_ORF.tsv',
+NMDMouseDenseThirdOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_third_ORF.tsv',
   sep = '\t', header = TRUE)
-
-RIMouseDenseSecond=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/All_AA_density_second_ORF.tsv',
+NMDMouseDenseFourthOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_third_ORF.tsv',
   sep = '\t', header = TRUE)
-
 
 CodingMouseDense=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Raw-Data/Mouse/All_AA_density.tsv',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Raw-Data/Mouse/All_AA_density.tsv',
   sep = '\t', header = TRUE)
 
-NMDMousedensitiesA = c("First ORF" = list(NMDMouseDenseFirst[,2]),"Second ORF" = list(NMDMouseDenseSecond[,2]),"Coding transcripts" = list(CodingMouseDense[,2]))
-NMDMousedensitiesR = c("First ORF" = list(NMDMouseDenseFirst[,3]),"Second ORF" = list(NMDMouseDenseSecond[,3]),"Coding transcripts" = list(CodingMouseDense[,3]))
-NMDMousedensitiesN = c("First ORF" = list(NMDMouseDenseFirst[,4]),"Second ORF" = list(NMDMouseDenseSecond[,4]),"Coding transcripts" = list(CodingMouseDense[,4]))
-NMDMousedensitiesD = c("First ORF" = list(NMDMouseDenseFirst[,5]),"Second ORF" = list(NMDMouseDenseSecond[,5]),"Coding transcripts" = list(CodingMouseDense[,5]))
-NMDMousedensitiesC = c("First ORF" = list(NMDMouseDenseFirst[,6]),"Second ORF" = list(NMDMouseDenseSecond[,6]),"Coding transcripts" = list(CodingMouseDense[,6]))
-NMDMousedensitiesQ = c("First ORF" = list(NMDMouseDenseFirst[,7]),"Second ORF" = list(NMDMouseDenseSecond[,7]),"Coding transcripts" = list(CodingMouseDense[,7]))
-NMDMousedensitiesG = c("First ORF" = list(NMDMouseDenseFirst[,8]),"Second ORF" = list(NMDMouseDenseSecond[,8]),"Coding transcripts" = list(CodingMouseDense[,8]))
-NMDMousedensitiesE = c("First ORF" = list(NMDMouseDenseFirst[,9]),"Second ORF" = list(NMDMouseDenseSecond[,9]),"Coding transcripts" = list(CodingMouseDense[,9]))
-NMDMousedensitiesH = c("First ORF" = list(NMDMouseDenseFirst[,10]),"Second ORF" = list(NMDMouseDenseSecond[,10]),"Coding transcripts" = list(CodingMouseDense[,10]))
-NMDMousedensitiesI = c("First ORF" = list(NMDMouseDenseFirst[,11]),"Second ORF" = list(NMDMouseDenseSecond[,11]),"Coding transcripts" = list(CodingMouseDense[,11]))
-NMDMousedensitiesL = c("First ORF" = list(NMDMouseDenseFirst[,12]),"Second ORF" = list(NMDMouseDenseSecond[,12]),"Coding transcripts" = list(CodingMouseDense[,12]))
-NMDMousedensitiesK = c("First ORF" = list(NMDMouseDenseFirst[,13]),"Second ORF" = list(NMDMouseDenseSecond[,13]),"Coding transcripts" = list(CodingMouseDense[,13]))
-NMDMousedensitiesM = c("First ORF" = list(NMDMouseDenseFirst[,14]),"Second ORF" = list(NMDMouseDenseSecond[,14]),"Coding transcripts" = list(CodingMouseDense[,14]))
-NMDMousedensitiesF = c("First ORF" = list(NMDMouseDenseFirst[,15]),"Second ORF" = list(NMDMouseDenseSecond[,15]),"Coding transcripts" = list(CodingMouseDense[,15]))
-NMDMousedensitiesP = c("First ORF" = list(NMDMouseDenseFirst[,16]),"Second ORF" = list(NMDMouseDenseSecond[,16]),"Coding transcripts" = list(CodingMouseDense[,16]))
-NMDMousedensitiesS = c("First ORF" = list(NMDMouseDenseFirst[,17]),"Second ORF" = list(NMDMouseDenseSecond[,17]),"Coding transcripts" = list(CodingMouseDense[,17]))
-NMDMousedensitiesT = c("First ORF" = list(NMDMouseDenseFirst[,18]),"Second ORF" = list(NMDMouseDenseSecond[,18]),"Coding transcripts" = list(CodingMouseDense[,18]))
-NMDMousedensitiesW = c("First ORF" = list(NMDMouseDenseFirst[,19]),"Second ORF" = list(NMDMouseDenseSecond[,19]),"Coding transcripts" = list(CodingMouseDense[,19]))
-NMDMousedensitiesY = c("First ORF" = list(NMDMouseDenseFirst[,20]),"Second ORF" = list(NMDMouseDenseSecond[,20]),"Coding transcripts" = list(CodingMouseDense[,20]))
-NMDMousedensitiesV = c("First ORF" = list(NMDMouseDenseFirst[,21]),"Second ORF" = list(NMDMouseDenseSecond[,21]),"Coding transcripts" = list(CodingMouseDense[,21]))
+NMDdensitiesMouseOrf=list()
+for(i in 1:20){
+  NMDdensitiesMouseOrf=c(NMDdensitiesMouseOrf,list(c("First ORF" = list(NMDMouseDenseFirstOrf[,i+1]),"Second ORF" = list(NMDMouseDenseSecondOrf[,i+1]),"Third ORF" = list(NMDMouseDenseThirdOrf[,i+1]),"Fourth ORF" = list(NMDMouseDenseFourthOrf[,i+1]),"Coding transcripts" = list(CodingMouseDense[,i+1]))))
+}
 
-#par(mfrow=c(10,2))
-
-
-boxplot(NMDMousedensitiesA,ylab="Density",outline = FALSE, main = "Alanine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesR,ylab="Density",outline = FALSE, main = "Arginine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesN,ylab="Density",outline = FALSE, main = "Asparagine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesD,ylab="Density",outline = FALSE, main = "Aspartic acid density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesC,ylab="Density",outline = FALSE, main = "Cysteine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesQ,ylab="Density",outline = FALSE, main = "Glutamine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesG,ylab="Density",outline = FALSE, main = "Glycine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesE,ylab="Density",outline = FALSE, main = "Glutamic acid density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesH,ylab="Density",outline = FALSE, main = "Histidine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesI,ylab="Density",outline = FALSE, main = "Isoleucine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesL,ylab="Density",outline = FALSE, main = "Leucine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesK,ylab="Density",outline = FALSE, main = "Lysine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesM,ylab="Density",outline = FALSE, main = "Methionine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesF,ylab="Density",outline = FALSE, main = "Phenylalanine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesP,ylab="Density",outline = FALSE, main = "Proline density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesS,ylab="Density",outline = FALSE, main = "Serine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesT,ylab="Density",outline = FALSE, main = "Threonine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesW,ylab="Density",outline = FALSE, main = "Tryptophan density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesY,ylab="Density",outline = FALSE, main = "Tyrosine density for unique regions and protein coding transcripts")
-boxplot(NMDMousedensitiesV,ylab="Density",outline = FALSE, main = "Valine density for unique regions and protein coding transcripts")
+for(i in 1:20){
+  createBoxplot(NMDdensitiesMouseOrf[[i]],names[[i]],"c")
+}
 ```
 
-### T-test between unique Protein Regions in first ORF and unique Protein Regions in second ORF:
+#### Unique regions
 
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDMousedensitiesA[[1]],NMDMousedensitiesA[[2]])
-cat("Arginine")
-t.test(NMDMousedensitiesR[[1]],NMDMousedensitiesR[[2]])
-cat("Asparagine")
-t.test(NMDMousedensitiesN[[1]],NMDMousedensitiesN[[2]])
-cat("Aspartic acid")
-t.test(NMDMousedensitiesD[[1]],NMDMousedensitiesD[[2]])
-cat("Cysteine")
-t.test(NMDMousedensitiesC[[1]],NMDMousedensitiesC[[2]])
-cat("Glutamine")
-t.test(NMDMousedensitiesQ[[1]],NMDMousedensitiesQ[[2]])
-cat("Glycine")
-t.test(NMDMousedensitiesG[[1]],NMDMousedensitiesG[[2]])
-cat("Glutamic acid")
-t.test(NMDMousedensitiesE[[1]],NMDMousedensitiesE[[2]])
-cat("Histidine")
-t.test(NMDMousedensitiesH[[1]],NMDMousedensitiesH[[2]])
-cat("Isoleucine")
-t.test(NMDMousedensitiesI[[1]],NMDMousedensitiesI[[2]])
-cat("Leucine")
-t.test(NMDMousedensitiesL[[1]],NMDMousedensitiesL[[2]])
-cat("Lysine")
-t.test(NMDMousedensitiesK[[1]],NMDMousedensitiesK[[2]])
-cat("Methionine")
-t.test(NMDMousedensitiesM[[1]],NMDMousedensitiesM[[2]])
-cat("Phenylalanine")
-t.test(NMDMousedensitiesF[[1]],NMDMousedensitiesF[[2]])
-cat("Proline")
-t.test(NMDMousedensitiesP[[1]],NMDMousedensitiesP[[2]])
-cat("Serine")
-t.test(NMDMousedensitiesS[[1]],NMDMousedensitiesS[[2]])
-cat("Threonine")
-t.test(NMDMousedensitiesT[[1]],NMDMousedensitiesT[[2]])
-cat("Tryptophan")
-t.test(NMDMousedensitiesW[[1]],NMDMousedensitiesW[[2]])
-cat("Tyrosine")
-t.test(NMDMousedensitiesY[[1]],NMDMousedensitiesY[[2]])
-cat("Valine")
-t.test(NMDMousedensitiesV[[1]],NMDMousedensitiesV[[2]])
+```{r MouseNMDunique, echo=FALSE, out.width="50%", warning=FALSE}
+
+NMDMouseDenseFirst=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_first_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+NMDMouseDenseSecond=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_second_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+NMDMouseDenseThird=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/NMD/All_AA_density_third_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+
+CodingMouseDense=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Raw-Data/Mouse/All_AA_density.tsv',
+  sep = '\t', header = TRUE)
+
+NMDdensitiesMouse=list()
+for(i in 1:20){
+  NMDdensitiesMouse=c(NMDdensitiesMouse,list(c("First ORF" = list(NMDMouseDenseFirst[,i+1]),"Second ORF" = list(NMDMouseDenseSecond[,i+1]),"Third ORF" = list(NMDMouseDenseThird[,i+1]),"Coding transcripts" = list(CodingMouseDense[,i+1]))))
+}
+
+for(i in 1:20){
+  createBoxplot(NMDdensitiesMouse[[i]],names[[i]])
+}
 ```
 
-### T-test between unique Protein Regions in first ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDMousedensitiesA[[1]],NMDMousedensitiesA[[3]])
-cat("Arginine")
-t.test(NMDMousedensitiesR[[1]],NMDMousedensitiesR[[3]])
-cat("Asparagine")
-t.test(NMDMousedensitiesN[[1]],NMDMousedensitiesN[[3]])
-cat("Aspartic acid")
-t.test(NMDMousedensitiesD[[1]],NMDMousedensitiesD[[3]])
-cat("Cysteine")
-t.test(NMDMousedensitiesC[[1]],NMDMousedensitiesC[[3]])
-cat("Glutamine")
-t.test(NMDMousedensitiesQ[[1]],NMDMousedensitiesQ[[3]])
-cat("Glycine")
-t.test(NMDMousedensitiesG[[1]],NMDMousedensitiesG[[3]])
-cat("Glutamic acid")
-t.test(NMDMousedensitiesE[[1]],NMDMousedensitiesE[[3]])
-cat("Histidine")
-t.test(NMDMousedensitiesH[[1]],NMDMousedensitiesH[[3]])
-cat("Isoleucine")
-t.test(NMDMousedensitiesI[[1]],NMDMousedensitiesI[[3]])
-cat("Leucine")
-t.test(NMDMousedensitiesL[[1]],NMDMousedensitiesL[[3]])
-cat("Lysine")
-t.test(NMDMousedensitiesK[[1]],NMDMousedensitiesK[[3]])
-cat("Methionine")
-t.test(NMDMousedensitiesM[[1]],NMDMousedensitiesM[[3]])
-cat("Phenylalanine")
-t.test(NMDMousedensitiesF[[1]],NMDMousedensitiesF[[3]])
-cat("Proline")
-t.test(NMDMousedensitiesP[[1]],NMDMousedensitiesP[[3]])
-cat("Serine")
-t.test(NMDMousedensitiesS[[1]],NMDMousedensitiesS[[3]])
-cat("Threonine")
-t.test(NMDMousedensitiesT[[1]],NMDMousedensitiesT[[3]])
-cat("Tryptophan")
-t.test(NMDMousedensitiesW[[1]],NMDMousedensitiesW[[3]])
-cat("Tyrosine")
-t.test(NMDMousedensitiesY[[1]],NMDMousedensitiesY[[3]])
-cat("Valine")
-t.test(NMDMousedensitiesV[[1]],NMDMousedensitiesV[[3]])
-```
-
-### T-test between unique Protein Regions in second ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(NMDMousedensitiesA[[2]],NMDMousedensitiesA[[3]])
-cat("Arginine")
-t.test(NMDMousedensitiesR[[2]],NMDMousedensitiesR[[3]])
-cat("Asparagine")
-t.test(NMDMousedensitiesN[[2]],NMDMousedensitiesN[[3]])
-cat("Aspartic acid")
-t.test(NMDMousedensitiesD[[2]],NMDMousedensitiesD[[3]])
-cat("Cysteine")
-t.test(NMDMousedensitiesC[[2]],NMDMousedensitiesC[[3]])
-cat("Glutamine")
-t.test(NMDMousedensitiesQ[[2]],NMDMousedensitiesQ[[3]])
-cat("Glycine")
-t.test(NMDMousedensitiesG[[2]],NMDMousedensitiesG[[3]])
-cat("Glutamic acid")
-t.test(NMDMousedensitiesE[[2]],NMDMousedensitiesE[[3]])
-cat("Histidine")
-t.test(NMDMousedensitiesH[[2]],NMDMousedensitiesH[[3]])
-cat("Isoleucine")
-t.test(NMDMousedensitiesI[[2]],NMDMousedensitiesI[[3]])
-cat("Leucine")
-t.test(NMDMousedensitiesL[[2]],NMDMousedensitiesL[[3]])
-cat("Lysine")
-t.test(NMDMousedensitiesK[[2]],NMDMousedensitiesK[[3]])
-cat("Methionine")
-t.test(NMDMousedensitiesM[[2]],NMDMousedensitiesM[[3]])
-cat("Phenylalanine")
-t.test(NMDMousedensitiesF[[2]],NMDMousedensitiesF[[3]])
-cat("Proline")
-t.test(NMDMousedensitiesP[[2]],NMDMousedensitiesP[[3]])
-cat("Serine")
-t.test(NMDMousedensitiesS[[2]],NMDMousedensitiesS[[3]])
-cat("Threonine")
-t.test(NMDMousedensitiesT[[2]],NMDMousedensitiesT[[3]])
-cat("Tryptophan")
-t.test(NMDMousedensitiesW[[2]],NMDMousedensitiesW[[3]])
-cat("Tyrosine")
-t.test(NMDMousedensitiesY[[2]],NMDMousedensitiesY[[3]])
-cat("Valine")
-t.test(NMDMousedensitiesV[[2]],NMDMousedensitiesV[[3]])
-```
 
 ### RI
 
+#### Complete ORFs
 
-```{r setupMouseRI, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
-RIMousedensitiesA = c("First ORF" = list(RIMouseDenseFirst[,2]),"Second ORF" = list(RIMouseDenseSecond[,2]),"Coding transcripts" = list(CodingMouseDense[,2]))
-RIMousedensitiesR = c("First ORF" = list(RIMouseDenseFirst[,3]),"Second ORF" = list(RIMouseDenseSecond[,3]),"Coding transcripts" = list(CodingMouseDense[,3]))
-RIMousedensitiesN = c("First ORF" = list(RIMouseDenseFirst[,4]),"Second ORF" = list(RIMouseDenseSecond[,4]),"Coding transcripts" = list(CodingMouseDense[,4]))
-RIMousedensitiesD = c("First ORF" = list(RIMouseDenseFirst[,5]),"Second ORF" = list(RIMouseDenseSecond[,5]),"Coding transcripts" = list(CodingMouseDense[,5]))
-RIMousedensitiesC = c("First ORF" = list(RIMouseDenseFirst[,6]),"Second ORF" = list(RIMouseDenseSecond[,6]),"Coding transcripts" = list(CodingMouseDense[,6]))
-RIMousedensitiesQ = c("First ORF" = list(RIMouseDenseFirst[,7]),"Second ORF" = list(RIMouseDenseSecond[,7]),"Coding transcripts" = list(CodingMouseDense[,7]))
-RIMousedensitiesG = c("First ORF" = list(RIMouseDenseFirst[,8]),"Second ORF" = list(RIMouseDenseSecond[,8]),"Coding transcripts" = list(CodingMouseDense[,8]))
-RIMousedensitiesE = c("First ORF" = list(RIMouseDenseFirst[,9]),"Second ORF" = list(RIMouseDenseSecond[,9]),"Coding transcripts" = list(CodingMouseDense[,9]))
-RIMousedensitiesH = c("First ORF" = list(RIMouseDenseFirst[,10]),"Second ORF" = list(RIMouseDenseSecond[,10]),"Coding transcripts" = list(CodingMouseDense[,10]))
-RIMousedensitiesI = c("First ORF" = list(RIMouseDenseFirst[,11]),"Second ORF" = list(RIMouseDenseSecond[,11]),"Coding transcripts" = list(CodingMouseDense[,11]))
-RIMousedensitiesL = c("First ORF" = list(RIMouseDenseFirst[,12]),"Second ORF" = list(RIMouseDenseSecond[,12]),"Coding transcripts" = list(CodingMouseDense[,12]))
-RIMousedensitiesK = c("First ORF" = list(RIMouseDenseFirst[,13]),"Second ORF" = list(RIMouseDenseSecond[,13]),"Coding transcripts" = list(CodingMouseDense[,13]))
-RIMousedensitiesM = c("First ORF" = list(RIMouseDenseFirst[,14]),"Second ORF" = list(RIMouseDenseSecond[,14]),"Coding transcripts" = list(CodingMouseDense[,14]))
-RIMousedensitiesF = c("First ORF" = list(RIMouseDenseFirst[,15]),"Second ORF" = list(RIMouseDenseSecond[,15]),"Coding transcripts" = list(CodingMouseDense[,15]))
-RIMousedensitiesP = c("First ORF" = list(RIMouseDenseFirst[,16]),"Second ORF" = list(RIMouseDenseSecond[,16]),"Coding transcripts" = list(CodingMouseDense[,16]))
-RIMousedensitiesS = c("First ORF" = list(RIMouseDenseFirst[,17]),"Second ORF" = list(RIMouseDenseSecond[,17]),"Coding transcripts" = list(CodingMouseDense[,17]))
-RIMousedensitiesT = c("First ORF" = list(RIMouseDenseFirst[,18]),"Second ORF" = list(RIMouseDenseSecond[,18]),"Coding transcripts" = list(CodingMouseDense[,18]))
-RIMousedensitiesW = c("First ORF" = list(RIMouseDenseFirst[,19]),"Second ORF" = list(RIMouseDenseSecond[,19]),"Coding transcripts" = list(CodingMouseDense[,19]))
-RIMousedensitiesY = c("First ORF" = list(RIMouseDenseFirst[,20]),"Second ORF" = list(RIMouseDenseSecond[,20]),"Coding transcripts" = list(CodingMouseDense[,20]))
-RIMousedensitiesV = c("First ORF" = list(RIMouseDenseFirst[,21]),"Second ORF" = list(RIMouseDenseSecond[,21]),"Coding transcripts" = list(CodingMouseDense[,21]))
+```{r MouseRI, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
 
-#par(mfrow=c(10,2))
+RIMouseDenseFirstOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_first_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseSecondOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_second_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseThirdOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_third_ORF.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseFourthOrf=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_fourth_ORF.tsv',
+  sep = '\t', header = TRUE)
 
+RIdensitiesMouseOrf=list()
+for(i in 1:20){
+  RIdensitiesMouseOrf=c(RIdensitiesMouseOrf,list(c("First ORF" = list(RIMouseDenseFirstOrf[,i+1]),"Second ORF" = list(RIMouseDenseSecondOrf[,i+1]),"Third ORF" = list(RIMouseDenseThirdOrf[,i+1]),"Fourth ORF" = list(RIMouseDenseFourthOrf[,i+1]),"Coding transcripts" = list(CodingMouseDense[,i+1]))))
+}
 
-boxplot(RIMousedensitiesA,ylab="Density",outline = FALSE, main = "Alanine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesR,ylab="Density",outline = FALSE, main = "Arginine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesN,ylab="Density",outline = FALSE, main = "Asparagine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesD,ylab="Density",outline = FALSE, main = "Aspartic acid density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesC,ylab="Density",outline = FALSE, main = "Cysteine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesQ,ylab="Density",outline = FALSE, main = "Glutamine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesG,ylab="Density",outline = FALSE, main = "Glycine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesE,ylab="Density",outline = FALSE, main = "Glutamic acid density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesH,ylab="Density",outline = FALSE, main = "Histidine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesI,ylab="Density",outline = FALSE, main = "Isoleucine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesL,ylab="Density",outline = FALSE, main = "Leucine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesK,ylab="Density",outline = FALSE, main = "Lysine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesM,ylab="Density",outline = FALSE, main = "Methionine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesF,ylab="Density",outline = FALSE, main = "Phenylalanine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesP,ylab="Density",outline = FALSE, main = "Proline density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesS,ylab="Density",outline = FALSE, main = "Serine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesT,ylab="Density",outline = FALSE, main = "Threonine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesW,ylab="Density",outline = FALSE, main = "Tryptophan density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesY,ylab="Density",outline = FALSE, main = "Tyrosine density for unique regions and protein coding transcripts")
-boxplot(RIMousedensitiesV,ylab="Density",outline = FALSE, main = "Valine density for unique regions and protein coding transcripts")
+for(i in 1:20){
+  createBoxplot(RIdensitiesMouseOrf[[i]],names[[i]],"c")
+}
 ```
 
-### T-test between unique Protein Regions in first ORF and unique Protein Regions in second ORF:
+#### Unique regions
 
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIMousedensitiesA[[1]],RIMousedensitiesA[[2]])
-cat("Arginine")
-t.test(RIMousedensitiesR[[1]],RIMousedensitiesR[[2]])
-cat("Asparagine")
-t.test(RIMousedensitiesN[[1]],RIMousedensitiesN[[2]])
-cat("Aspartic acid")
-t.test(RIMousedensitiesD[[1]],RIMousedensitiesD[[2]])
-cat("Cysteine")
-t.test(RIMousedensitiesC[[1]],RIMousedensitiesC[[2]])
-cat("Glutamine")
-t.test(RIMousedensitiesQ[[1]],RIMousedensitiesQ[[2]])
-cat("Glycine")
-t.test(RIMousedensitiesG[[1]],RIMousedensitiesG[[2]])
-cat("Glutamic acid")
-t.test(RIMousedensitiesE[[1]],RIMousedensitiesE[[2]])
-cat("Histidine")
-t.test(RIMousedensitiesH[[1]],RIMousedensitiesH[[2]])
-cat("Isoleucine")
-t.test(RIMousedensitiesI[[1]],RIMousedensitiesI[[2]])
-cat("Leucine")
-t.test(RIMousedensitiesL[[1]],RIMousedensitiesL[[2]])
-cat("Lysine")
-t.test(RIMousedensitiesK[[1]],RIMousedensitiesK[[2]])
-cat("Methionine")
-t.test(RIMousedensitiesM[[1]],RIMousedensitiesM[[2]])
-cat("Phenylalanine")
-t.test(RIMousedensitiesF[[1]],RIMousedensitiesF[[2]])
-cat("Proline")
-t.test(RIMousedensitiesP[[1]],RIMousedensitiesP[[2]])
-cat("Serine")
-t.test(RIMousedensitiesS[[1]],RIMousedensitiesS[[2]])
-cat("Threonine")
-t.test(RIMousedensitiesT[[1]],RIMousedensitiesT[[2]])
-cat("Tryptophan")
-t.test(RIMousedensitiesW[[1]],RIMousedensitiesW[[2]])
-cat("Tyrosine")
-t.test(RIMousedensitiesY[[1]],RIMousedensitiesY[[2]])
-cat("Valine")
-t.test(RIMousedensitiesV[[1]],RIMousedensitiesV[[2]])
-```
+```{r MouseRIunique, echo=FALSE, fig.show="hold", out.width="50%", warning=FALSE}
 
+RIMouseDenseFirst=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_first_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseSecond=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_second_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseThird=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_third_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
+RIMouseDenseFourth=read.table(
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/HIWI/Mouse/RI/All_AA_density_fourth_ORF_UR.tsv',
+  sep = '\t', header = TRUE)
 
-### T-test between unique Protein Regions in first ORF and protein coding transcripts:
+RIdensitiesMouse=list()
+for(i in 1:20){
+  RIdensitiesMouse=c(RIdensitiesMouse,list(c("First ORF" = list(RIMouseDenseFirst[,i+1]),"Second ORF" = list(RIMouseDenseSecond[,i+1]),"Third ORF" = list(RIMouseDenseThird[,i+1]),"Fourth ORF" = list(RIMouseDenseFourth[,i+1]),"Coding transcripts" = list(CodingMouseDense[,i+1]))))
+}
 
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIMousedensitiesA[[1]],RIMousedensitiesA[[3]])
-cat("Arginine")
-t.test(RIMousedensitiesR[[1]],RIMousedensitiesR[[3]])
-cat("Asparagine")
-t.test(RIMousedensitiesN[[1]],RIMousedensitiesN[[3]])
-cat("Aspartic acid")
-t.test(RIMousedensitiesD[[1]],RIMousedensitiesD[[3]])
-cat("Cysteine")
-t.test(RIMousedensitiesC[[1]],RIMousedensitiesC[[3]])
-cat("Glutamine")
-t.test(RIMousedensitiesQ[[1]],RIMousedensitiesQ[[3]])
-cat("Glycine")
-t.test(RIMousedensitiesG[[1]],RIMousedensitiesG[[3]])
-cat("Glutamic acid")
-t.test(RIMousedensitiesE[[1]],RIMousedensitiesE[[3]])
-cat("Histidine")
-t.test(RIMousedensitiesH[[1]],RIMousedensitiesH[[3]])
-cat("Isoleucine")
-t.test(RIMousedensitiesI[[1]],RIMousedensitiesI[[3]])
-cat("Leucine")
-t.test(RIMousedensitiesL[[1]],RIMousedensitiesL[[3]])
-cat("Lysine")
-t.test(RIMousedensitiesK[[1]],RIMousedensitiesK[[3]])
-cat("Methionine")
-t.test(RIMousedensitiesM[[1]],RIMousedensitiesM[[3]])
-cat("Phenylalanine")
-t.test(RIMousedensitiesF[[1]],RIMousedensitiesF[[3]])
-cat("Proline")
-t.test(RIMousedensitiesP[[1]],RIMousedensitiesP[[3]])
-cat("Serine")
-t.test(RIMousedensitiesS[[1]],RIMousedensitiesS[[3]])
-cat("Threonine")
-t.test(RIMousedensitiesT[[1]],RIMousedensitiesT[[3]])
-cat("Tryptophan")
-t.test(RIMousedensitiesW[[1]],RIMousedensitiesW[[3]])
-cat("Tyrosine")
-t.test(RIMousedensitiesY[[1]],RIMousedensitiesY[[3]])
-cat("Valine")
-t.test(RIMousedensitiesV[[1]],RIMousedensitiesV[[3]])
-```
-
-
-### T-test between unique Protein Regions in second ORF and protein coding transcripts:
-
-```{r, echo= FALSE}
-cat("Alananine:")
-t.test(RIMousedensitiesA[[2]],RIMousedensitiesA[[3]])
-cat("Arginine")
-t.test(RIMousedensitiesR[[2]],RIMousedensitiesR[[3]])
-cat("Asparagine")
-t.test(RIMousedensitiesN[[2]],RIMousedensitiesN[[3]])
-cat("Aspartic acid")
-t.test(RIMousedensitiesD[[2]],RIMousedensitiesD[[3]])
-cat("Cysteine")
-t.test(RIMousedensitiesC[[2]],RIMousedensitiesC[[3]])
-cat("Glutamine")
-t.test(RIMousedensitiesQ[[2]],RIMousedensitiesQ[[3]])
-cat("Glycine")
-t.test(RIMousedensitiesG[[2]],RIMousedensitiesG[[3]])
-cat("Glutamic acid")
-t.test(RIMousedensitiesE[[2]],RIMousedensitiesE[[3]])
-cat("Histidine")
-t.test(RIMousedensitiesH[[2]],RIMousedensitiesH[[3]])
-cat("Isoleucine")
-t.test(RIMousedensitiesI[[2]],RIMousedensitiesI[[3]])
-cat("Leucine")
-t.test(RIMousedensitiesL[[2]],RIMousedensitiesL[[3]])
-cat("Lysine")
-t.test(RIMousedensitiesK[[2]],RIMousedensitiesK[[3]])
-cat("Methionine")
-t.test(RIMousedensitiesM[[2]],RIMousedensitiesM[[3]])
-cat("Phenylalanine")
-t.test(RIMousedensitiesF[[2]],RIMousedensitiesF[[3]])
-cat("Proline")
-t.test(RIMousedensitiesP[[2]],RIMousedensitiesP[[3]])
-cat("Serine")
-t.test(RIMousedensitiesS[[2]],RIMousedensitiesS[[3]])
-cat("Threonine")
-t.test(RIMousedensitiesT[[2]],RIMousedensitiesT[[3]])
-cat("Tryptophan")
-t.test(RIMousedensitiesW[[2]],RIMousedensitiesW[[3]])
-cat("Tyrosine")
-t.test(RIMousedensitiesY[[2]],RIMousedensitiesY[[3]])
-cat("Valine")
-t.test(RIMousedensitiesV[[2]],RIMousedensitiesV[[3]])
+for(i in 1:20){
+  createBoxplot(RIdensitiesMouse[[i]],names[[i]])
+}
 ```

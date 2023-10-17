@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#USE THIS FILE FOR RI UNIQUE REGIONS AND GENOMIC ALIGNMENT. Bowtie_Align_genomic NEEDS TO BE PERFORMED BEFORE THIS SCRIPT CAN BE USED
-
 #Help message:
 usage="
 Usage: ./Bowtie_Align.sh [-options] bedfile out unique_regions.bed transcripts.fa
@@ -46,20 +44,15 @@ out=$2.sam
 unique_regions=$3
 referencetranscripts=$4
 
-#determine the number of reads intersecting at least 33% with a unique region and sort the file accordingly
 intersectbedfile=$(echo $bedfile | rev | cut -f 2- -d '.' | rev)_RI_intersect_counts.bed
 echo "intersecting with unique regions"
 bedtools intersect -c -F 0.33 -a $unique_regions -b $bedfile > $intersectbedfile
 sortedBedfile=$(echo $intersectbedfile | rev | cut -f 2- -d '.' | rev)_sorted.bed
 sort -k 4 -r -n $intersectbedfile > $sortedBedfile
-
-#calculate the relative read count (number of aligning reads / length of unique region) and sort according to relative read count
 intersectbedfilerelative=$(echo $intersectbedfile | rev | cut -f 2- -d '.' | rev)_relative.bed
 cat $intersectbedfile | awk -v OFS='\t' '{print $1,$2,$3,$4,$4/($3-$2)}' > $intersectbedfilerelative
 intersectbedfilerelativesorted=$(echo $intersectbedfilerelative | rev | cut -f 2- -d '.' | rev)_sorted.bed
 sort -n -r -k 5 $intersectbedfilerelative > $intersectbedfilerelativesorted
-
-#create a file with random regions of the same length distribution as original unique regions and again determine read count and relative read count
 randomfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_random_background_regions.bed
 python ./PipeTest/Pipeline/Uniqueness_scripts/BackgroundRegions.py $unique_regions $referencetranscripts $randomfile
 randomintersectfile=$(echo $out | rev | cut -f 2- -d '.' | rev)_RI_random_intersect_counts.bed

@@ -83,31 +83,17 @@ ui <- fluidPage(
         ),
         tabPanel("UCSC Links",
                  shiny::fluidRow(
-                   shinydashboard::box(title = "NMD human", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
+                   shinydashboard::box(title = "NMD", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
                                        shiny::actionButton(inputId='ab1', label="Open UCSC", 
                                                            icon = icon("align-center"), 
                                                            onclick ="window.open('http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&hgt.customText=https://raw.githubusercontent.com/JustinMurtagh29/Split-Orf_data/main/NMD.txt')")
                    )
                  ),
                  shiny::fluidRow(
-                   shinydashboard::box(title = "RI human", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
+                   shinydashboard::box(title = "RI", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
                                        shiny::actionButton(inputId='ab1', label="Open UCSC", 
                                                            icon = icon("align-center"), 
                                                            onclick ="window.open('http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&hgt.customText=https://raw.githubusercontent.com/JustinMurtagh29/Split-Orf_data/main/RI.txt')")
-                   )
-                 ),
-                 shiny::fluidRow(
-                   shinydashboard::box(title = "NMD mouse", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
-                                       shiny::actionButton(inputId='ab1', label="Open UCSC", 
-                                                           icon = icon("align-center"), 
-                                                           onclick ="window.open('http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&hgt.customText=https://raw.githubusercontent.com/JustinMurtagh29/Split-Orf_data/main/NMD_mouse.txt')")
-                   )
-                 ),
-                 shiny::fluidRow(
-                   shinydashboard::box(title = "RI mouse", "View the transcripts, ORFs, unique regions and ribo-seq data in the UCSC genome browser", 
-                                       shiny::actionButton(inputId='ab1', label="Open UCSC", 
-                                                           icon = icon("align-center"), 
-                                                           onclick ="window.open('http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&hgt.customText=https://raw.githubusercontent.com/JustinMurtagh29/Split-Orf_data/main/RI_mouse.txt')")
                    )
                  )
         )
@@ -119,15 +105,15 @@ addResourcePath("tmpuser", getwd())
 server <- function(input, output) {
     getPage<-function() {
         if(input$Mainselection == "Ribo-seq"){
-            #rmarkdown::render(input = "./RiboSeqReportShiny.Rmd", 
-            #                  output_file = "./RiboSeqReport.html", 
-            #                  #params = list(args = c('G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/BOWTIE/','G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/BOWTIE/',input$minreads)),
-            #                  params = list(args = c('./data/NMD/BOWTIE','./data/RI/BOWTIE',input$minreads)),
-            #                  envir = new.env(parent = globalenv())
-            #)
-            #return(includeHTML("./RiboSeqReport.html"))
-            fname=paste0("./RiboSeqReport_min_", input$minreads, ".html")
-            return(includeHTML(fname))
+            rmarkdown::render(input = "./RiboSeqReportShiny.Rmd", 
+                              output_file = "./RiboSeqReport.pdf", 
+                              #params = list(args = c('G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/BOWTIE/','G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/BOWTIE/',input$minreads)),
+                              params = list(args = c('./data/NMD/BOWTIE','./data/RI/BOWTIE',input$minreads)),
+                              envir = new.env(parent = globalenv())
+            )
+            return(includeHTML("./RiboSeqReport.html"))
+            #fname=paste0("./RiboSeqReport_min_", input$minreads, ".html")
+            #return(includeHTML(fname))
         }
         if(input$Mainselection == "Ribo-seq mouse"){
           #rmarkdown::render(input = "./MouseRiboSeqReport.Rmd", 
@@ -192,7 +178,13 @@ server <- function(input, output) {
             plotmap()
         })
     })
-
+   # output$downloadImage <- downloadHandler(
+#        filename = "Heatmap.png",
+ #       content = function(file) {
+  #          png(file, width = 960, height = 650)
+   #         plotmap()
+    #        dev.off()
+     #   })  
     output$NMDtable <- renderDT(getSheet(), filter = "top",selection = list(target = 'row'))
     dt_proxy <- DT::dataTableProxy("NMDtable")
     observeEvent(input$dt_sel, {
@@ -202,6 +194,7 @@ server <- function(input, output) {
             DT::selectRows(dt_proxy, NULL)
         }
     })
+    #output$selected_rows <- renderPrint(print(input$dt_rows_selected))
     output$NMDfunction <- renderPlotly({
         req(input$NMDbutton)
         isolate({

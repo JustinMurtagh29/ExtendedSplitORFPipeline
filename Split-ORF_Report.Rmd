@@ -1,23 +1,26 @@
 ---
 title: "Split-ORF Report"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 params:
     args: myarg
 ---
 
 This report shows a number of summary statistics of the a result file obtained from the [SplitOrfs](https://github.com/SchulzLab/SplitOrfs) software.
 
-## Human Detained-Intron Transcripts 
 
-First it provides an overview of the valid alignment results:
+## Overview of the valid alignment results:
 
 
 ```{r basic stats,echo=FALSE}
+library(seqinr)
 datapath=getwd()
 path = "FinalAnalysis"
 file1=paste0(datapath,params[[1]][[1]])
 file2=paste0(datapath,params[[1]][[2]])
+file3=paste0(datapath,params[[1]][[3]])
+
+transcripts = read.fasta(file3)
 
 #read in all the Ensembl IDs with transcript support level annotation
 validIds=read.table(file1,header=T)#,fill=T,stringsAsFactors=F) 
@@ -26,7 +29,7 @@ tab = read.table(file2,header=T)#,fill=T,stringsAsFactors=F)
 
 tab= subset(tab,tab$OrfTransID %in% validIds$OrfTransID)
 
-NumTrans = nrow(validIds)
+NumTrans = length(transcripts)#nrow(validIds)
 validTrans = length(unique(tab$OrfTransID))
 annots=nrow(tab)-sum(is.na(tab$ORF.DomainAnnot))
 uniqGenes = length(unique(tab$geneID))
@@ -41,29 +44,30 @@ plotData = data.frame(Entry=legends,Values=values)
 plotData
 ```
 
-##
-This is the histogramm of matching ORFs per transcripts:
+## Histogramm of matching ORFs per transcripts:
 
 ```{r hist1, echo=FALSE}
 print(tab$NumOrfs)
 hist(tab$NumOrfs,col="blue",breaks=100,main="Matching ORFs per transcript",xlab="Number of ORFs")
 ```
 
-##
-This is the histogramm of NMD-protein pairs
+## Histogramm of NMD-protein pairs
+
 ```{r hist2, echo=FALSE}
 hist(table(tab$geneID),breaks=100,col="blue",main="Number of transcript - protein pairs per gene",xlab="Transcript-protein pairs per gene")
 ```
 
-These are the top 20 genes that have the most transcripts with >=2 ORFs
+## Top 20 genes, that have the most transcripts with >=2 ORFs
 ``` {r top pairs,echo=FALSE}
     df=data.frame(table(tab$geneID))
     names(df)=c("geneIDs","frequency")
     head(df[order(df$frequency,decreasing=T),],20)
     
 ```
-##
-A histogramm of min and max sequence identity values from the ORF-protein alignments, i.e., each such value is derived from one ORF-protein alignment. For all ORFs of a protein-ORF match the min respectively max seq. identity is recorded. The minimal sequence identity allowed for an alignment by default is 90%.
+
+## Histogramm of min and max sequence identity
+
+A histogramm of min and max sequence identity values from the ORF-protein alignments, i.e., each such value is derived from one ORF-protein alignment. For all ORFs of a protein-ORF match the min respectively max seq. identity is recorded. The minimal sequence identity allowed for an alignment by default is 95%.
 
 ```{r hist3, echo=FALSE}
 par(mfrow=c(2,1))
@@ -72,8 +76,9 @@ hist(tab$MaxSeqIdent,col="blue",main="Max seq identities",xlab="Sequence identit
 
 ```
 
-##
-To analyze the length of the predicted orfs in DNA basepairs we plot a histogram in the intervall [0,2000]. Note that the minimal length of an ORF is 120 base pairs, which explains the sudden break close to 0. In order to get an idea of av and analyze the mean lengthA histogramm of orf lengths.sequence min and max sequence identity values from the ORF-protein alignments. For all ORFs of a protein-ORF match the min respectively max seq. identity is recorded.
+## Histogram in the intervall [0,2000]
+
+To analyze the length of the predicted orfs in DNA basepairs we plot a histogram in the intervall [0,2000]. Note that the minimal length of an ORF is 120 base pairs, which explains the sudden break close to 0. 
 
 ```{r orfLengths, echo=FALSE}
 par(mfrow=c(2,1))
@@ -83,7 +88,8 @@ hist(sapply(strsplit(as.character(tab$OrfLengths),",",fixed=T),function(x){retur
 
 ```
 
-##
+## PFAM domain annotations
+
 PFAM domain annotations were obtained for all protein coding genes. Here we show how often more than one ORF overlaps an annotated PFAM domain in the alignment region. For example a value of two means, that two distinct ORFs made from the transcript aligned to regions in the protein that overlapped PFAM annotations.
 
 ```{r orfAnnots, echo=FALSE}
@@ -92,14 +98,20 @@ hist(subset(tab,AnnotPercent >0)$NumORFAnnot,breaks=100,col="blue",main="Frequen
 
 ```
 
+## Top 20 genes that have the most transcripts ORFs with annotations per transcript
+
 These are the top 20 genes that have the most transcripts ORFs with annotations per transcript. The column ORF.DomainAnnot shows the PFAM ID of one of the domains overlapping the corresponding ORF. Interestingly often several ORFs cover the same domain in some of the proteins.
+
 ``` {r top annotated ORFs,echo=FALSE}
     
     head(tab[order(tab$NumORFAnnot,decreasing=T),c("geneID","OrfTransID","NumORFAnnot","ORF.DomainAnnot")],20)
     
 ```
 
+## Domain analysis
+
 Number of different Domain annotations found in Split ORFs.
+
 ``` {r plot results for annotations,echo=FALSE}
     
     length(unique(names(table(unlist(tab$ORF.DomainAnnot)))))
@@ -115,7 +127,6 @@ Analysis of the type of domains that are part of SplitORFs looking per gene, thi
     subTab=subTab[!duplicated(subTab$geneID),]
     hist(table(unlist(subTab$ORF.DomainAnnot)),xlab="Number of domain type occurrences",main="Frequency of Domain type occurrences for all unique genes",col="blue",breaks=40)
 ```
-
 
 Show the top 50 most frequent domains found in Split Orfs (counting once per gene).
 ``` {r plot more results Gene,echo=FALSE}

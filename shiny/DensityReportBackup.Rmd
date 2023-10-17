@@ -1,0 +1,160 @@
+---
+title: "DensityReport"
+output: pdf_document
+---
+
+# Human
+
+### NMD
+
+```{r setupHumanNMD, echo=FALSE}
+glycineDense=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_Protein_regions_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensities=glycineDense[,2]
+
+prolineDense=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_Protein_regions_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensities=prolineDense[,2]
+
+
+glycineDenseCoding=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/Protein_coding_peptide_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensitiesCoding=glycineDenseCoding[,2]
+
+prolineDenseCoding=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Input/human/Protein_coding_peptide_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensitiesCoding=prolineDenseCoding[,2]
+
+
+
+
+densitiesgly=c("Unique Regions"=list(glycineDensities), "Coding transcripts" = list(glycineDensitiesCoding))
+densitiespro=c("Unique Regions"=list(prolineDensities), "Coding transcripts" = list(prolineDensitiesCoding))
+
+
+boxplot(densitiesgly,ylab="Glycine densities",outline = FALSE, main = "Glycine densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesgly[[1]],densitiesgly[[2]])
+
+
+boxplot(densitiespro,ylab="Proline densities",outline = FALSE,  main = "Proline densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiespro[[1]],densitiespro[[2]])
+
+```
+
+### RI
+
+
+```{r setupHumanRI, echo=FALSE}
+glycineDenseRI=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_Protein_regions_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensitiesRI=glycineDenseRI[,2]
+
+prolineDenseRI=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_Protein_regions_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensitiesRI=prolineDenseRI[,2]
+
+densitiesglyRI=c("Unique Regions"=list(glycineDensitiesRI), "Coding transcripts" = list(glycineDensitiesCoding))
+densitiesproRI=c("Unique Regions"=list(prolineDensitiesRI), "Coding transcripts" = list(prolineDensitiesCoding))
+
+
+boxplot(densitiesglyRI,ylab="Glycine densities",outline = FALSE, main = "Glycine densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesglyRI[[1]],densitiesglyRI[[2]])
+
+
+boxplot(densitiesproRI,ylab="Proline densities",outline = FALSE,  main = "Proline densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesproRI[[1]],densitiesproRI[[2]])
+
+```
+
+
+
+# Mouse
+
+### NMD
+
+```{r setupMouseNMD, echo=FALSE}
+glycineDenseMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_Protein_regions_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensitiesMouse=glycineDenseMouse[,2]
+
+prolineDenseMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_Protein_regions_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensitiesMouse=prolineDenseMouse[,2]
+
+
+glycineDenseCodingMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Raw-Data/Mouse/protein_coding_peptide_mouse_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensitiesCodingMouse=glycineDenseCodingMouse[,2]
+
+prolineDenseCodingMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/Raw-Data/Mouse/protein_coding_peptide_mouse_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensitiesCodingMouse=prolineDenseCodingMouse[,2]
+
+
+
+
+densitiesglyMouse=c("Unique Regions"=list(glycineDensitiesMouse), "Coding transcripts" = list(glycineDensitiesCodingMouse))
+densitiesproMouse=c("Unique Regions"=list(prolineDensitiesMouse), "Coding transcripts" = list(prolineDensitiesCodingMouse))
+
+
+boxplot(densitiesglyMouse,ylab="Glycine densities",outline = FALSE, main = "Glycine densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesglyMouse[[1]],densitiesglyMouse[[2]])
+
+
+boxplot(densitiesproMouse,ylab="Proline densities",outline = FALSE,  main = "Proline densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesproMouse[[1]],densitiesproMouse[[2]])
+
+```
+
+### RI
+
+
+```{r setupMouseRI, echo=FALSE}
+glycineDenseRIMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_Protein_regions_Glycine_density.tsv',
+  sep = '\t', header = FALSE)
+glycineDensitiesRIMouse=glycineDenseRIMouse[,2]
+
+prolineDenseRIMouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_Protein_regions_Proline_density.tsv',
+  sep = '\t', header = FALSE)
+prolineDensitiesRIMouse=prolineDenseRIMouse[,2]
+
+densitiesglyRIMouse=c("Unique Regions"=list(glycineDensitiesRIMouse), "Coding transcripts" = list(glycineDensitiesCodingMouse))
+densitiesproRIMouse=c("Unique Regions"=list(prolineDensitiesRIMouse), "Coding transcripts" = list(prolineDensitiesCodingMouse))
+
+
+boxplot(densitiesglyRI,ylab="Glycine densities",outline = FALSE, main = "Glycine densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesglyRIMouse[[1]],densitiesglyRIMouse[[2]])
+
+
+boxplot(densitiesproRIMouse,ylab="Proline densities",outline = FALSE,  main = "Proline densities for unique regions and protein coding transcripts")
+
+cat("T-test between Unique Protein Regions and coding transcripts:")
+t.test(densitiesproRIMouse[[1]],densitiesproRIMouse[[2]])
+
+```

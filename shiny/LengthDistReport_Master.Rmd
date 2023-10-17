@@ -1,0 +1,77 @@
+---
+title: "Unique Region length distributions"
+output: pdf_document
+---
+
+```{r, echo=FALSE}
+NMD_ORFs=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/ValidORF_DNA_Sequences_length.bed',
+  sep = '\t', header = FALSE)
+RI_ORFs=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/ValidORF_DNA_Sequences_length.bed',
+  sep = '\t', header = FALSE)
+NMD_ORFs_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/ValidORF_DNA_Sequences_length.bed',
+  sep = '\t', header = FALSE)
+RI_ORFs_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/ValidORF_DNA_Sequences_length.bed',
+  sep = '\t', header = FALSE)
+
+
+NMD_Unique_Protein=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_Protein_regions_length.bed',
+  sep = '\t', header = FALSE)
+RI_Unique_Protein=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_Protein_regions_length.bed',
+  sep = '\t', header = FALSE)
+NMD_Unique_Protein_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_Protein_regions_length.bed',
+  sep = '\t', header = FALSE)
+RI_Unique_Protein_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_Protein_regions_length.bed',
+  sep = '\t', header = FALSE)
+
+
+NMD_Unique_DNA=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_DNA_regions_length.bed',
+  sep = '\t', header = FALSE)
+RI_Unique_DNA=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_DNA_regions_length.bed',
+  sep = '\t', header = FALSE)
+NMD_Unique_DNA_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_DNA_regions_length.bed',
+  sep = '\t', header = FALSE)
+RI_Unique_DNA_Mouse=read.table(
+  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_DNA_regions_length.bed',
+  sep = '\t', header = FALSE)
+
+ORFlengths=c("NMD_Human"=list(NMD_ORFs[,2]),"RI_Human" = list(RI_ORFs[,2]), "NMD_Mouse" = list(NMD_ORFs_Mouse[,2]), "RI_Mouse" = list(RI_ORFs_Mouse[,2]))
+
+
+DNAlengths=c("NMD_Human"=list(NMD_Unique_DNA[,2]),"RI_Human" = list(RI_Unique_DNA[,2]), "NMD_Mouse" = list(NMD_Unique_DNA_Mouse[,2]), "RI_Mouse" = list(RI_Unique_DNA_Mouse[,2]))
+
+
+Protlengths=c("NMD_Human"=list(NMD_Unique_Protein[,2]),"RI_Human" = list(RI_Unique_Protein[,2]), "NMD_Mouse" = list(NMD_Unique_Protein_Mouse[,2]), "RI_Mouse" = list(RI_Unique_Protein_Mouse[,2]))
+
+```
+
+## The followind plot shows the length distribution for all valid split-ORFs
+
+```{r OutputORF, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(ORFlengths,ylab="length (bp)",outline = FALSE, main="Length of valid ORFs (bp)")
+```
+
+## The followind plot shows the length distribution for the unique DNA regions
+
+```{r OutputDNA, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(DNAlengths,ylab="length (bp)",outline = FALSE, main="Length of unique DNA Regions (bp)")
+```
+
+## The followind plot shows the length distribution for the unique protein regions
+
+```{r OutputProtein, echo=FALSE, fig.height = 7, fig.width = 10}
+boxplot(Protlengths,ylab="length (aa)",outline = FALSE, main="Length of unique Protein Regions (aa)")
+```
+
+
+

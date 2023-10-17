@@ -1,48 +1,53 @@
 ---
 title: "Unique Region length distributions"
-output: pdf_document
+output:
+  #pdf_document: default
+  html_document: default
 ---
 
-```{r, echo=FALSE}
+```{r setup , echo=FALSE}
+library(ggplot2)
+library(ggpubr)
+library(ggsci)
 NMD_ORFs=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/ValidORF_DNA_Sequences_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-15.07.16_NMD/ValidORF_DNA_Sequences_length.bed',
   sep = '\t', header = FALSE)
 RI_ORFs=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/ValidORF_DNA_Sequences_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-17.34.47_RI/ValidORF_DNA_Sequences_length.bed',
   sep = '\t', header = FALSE)
 NMD_ORFs_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/ValidORF_DNA_Sequences_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.10.55_NMD_Mouse/ValidORF_DNA_Sequences_length.bed',
   sep = '\t', header = FALSE)
 RI_ORFs_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/ValidORF_DNA_Sequences_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.56.04_RI_Mouse/ValidORF_DNA_Sequences_length.bed',
   sep = '\t', header = FALSE)
 
 
 NMD_Unique_Protein=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_Protein_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-15.07.16_NMD/Unique_Protein_regions_length.bed',
   sep = '\t', header = FALSE)
 RI_Unique_Protein=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_Protein_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-17.34.47_RI/Unique_Protein_regions_length.bed',
   sep = '\t', header = FALSE)
 NMD_Unique_Protein_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_Protein_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.10.55_NMD_Mouse/Unique_Protein_regions_length.bed',
   sep = '\t', header = FALSE)
 RI_Unique_Protein_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_Protein_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.56.04_RI_Mouse/Unique_Protein_regions_length.bed',
   sep = '\t', header = FALSE)
 
 
 NMD_Unique_DNA=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/Unique_DNA_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-15.07.16_NMD/Unique_DNA_regions_length.bed',
   sep = '\t', header = FALSE)
 RI_Unique_DNA=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-15.10.13_new_RI/Unique_DNA_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-17.34.47_RI/Unique_DNA_regions_length.bed',
   sep = '\t', header = FALSE)
 NMD_Unique_DNA_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-12.20.56_NMD_mouse/Unique_DNA_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.10.55_NMD_Mouse/Unique_DNA_regions_length.bed',
   sep = '\t', header = FALSE)
 RI_Unique_DNA_Mouse=read.table(
-  file = 'G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_15.07.2021-13.02.13_RI_mouse/Unique_DNA_regions_length.bed',
+  file = '/mnt/g/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_25.11.2021-19.56.04_RI_Mouse/Unique_DNA_regions_length.bed',
   sep = '\t', header = FALSE)
 
 ORFlengths=c("NMD_Human"=list(NMD_ORFs[,2]),"RI_Human" = list(RI_ORFs[,2]), "NMD_Mouse" = list(NMD_ORFs_Mouse[,2]), "RI_Mouse" = list(RI_ORFs_Mouse[,2]))
@@ -55,22 +60,61 @@ Protlengths=c("NMD_Human"=list(NMD_Unique_Protein[,2]),"RI_Human" = list(RI_Uniq
 
 ```
 
-## The followind plot shows the length distribution for all valid split-ORFs
+## The following plots show the length distribution for all valid split-ORFs
 
-```{r OutputORF, echo=FALSE, fig.height = 7, fig.width = 10}
-boxplot(ORFlengths,ylab="length (bp)",outline = FALSE, main="Length of valid ORFs (bp)")
+```{r OutputORF, echo=FALSE, fig.height = 7, fig.width = 10, warning=FALSE, message=FALSE}
+HumanNmdOrf <- data.frame(transcripts = "Human NMD", OrfLength = ORFlengths$`NMD_Human`)
+HumanRiOrf <- data.frame(transcripts = "Human RI", OrfLength = ORFlengths$`RI_Human`)
+MouseNmdOrf <- data.frame(transcripts = "Mouse NMD", OrfLength = ORFlengths$`NMD_Mouse`)
+MouseRiOrf <- data.frame(transcripts = "Mouse RI", OrfLength = ORFlengths$`RI_Mouse`)
+
+plot.data <- rbind(HumanNmdOrf,HumanRiOrf,MouseNmdOrf,MouseRiOrf)
+
+my_comparisons <- list(c(1,2),c(1,3),c(1,4),c(2,3),c(2,4),c(3,4))
+
+print(ggplot(plot.data, aes(x=transcripts, y=OrfLength, fill=transcripts)) + geom_boxplot() +  xlab("Originating transcripts") + ylab ("Orf Length (bp)")+ labs(fill = "Originating transcripts") + scale_x_discrete(labels= c("Human NMD","Human RI","Mouse NMD", "Mouse RI"))+geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + expand_limits(x = 0, y = 0) + ggtitle("Length distribution for complete ORFs of NMD and RI Transcript in human and mouse")+ scale_y_continuous(trans='log10', breaks = c(0, 1, 10, 100, 1000, 10000, 100000, 1000000))+ stat_summary(fun=mean, colour="darkred", geom="text", show.legend = FALSE, vjust=-1, aes( label=round(..y.., digits=3)))+ stat_summary(fun=mean, colour="darkred", geom="point", shape=18, size=2,show.legend = FALSE)+stat_compare_means(comparisons = my_comparisons) + stat_compare_means(label.y = 1.5,label.x = 1)+scale_fill_jco())
+
+ggplot(plot.data, aes(x=OrfLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of human split ORFs",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()
+
+ggplot(plot.data, aes(x=OrfLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of human split ORFs (Logarithmic)",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()+ scale_x_continuous(trans='log10')
 ```
 
-## The followind plot shows the length distribution for the unique DNA regions
+## The following plot shows the length distribution for the unique DNA regions
 
-```{r OutputDNA, echo=FALSE, fig.height = 7, fig.width = 10}
-boxplot(DNAlengths,ylab="length (bp)",outline = FALSE, main="Length of unique DNA Regions (bp)")
+```{r OutputDNA, echo=FALSE, fig.height = 7, fig.width = 10, warning=FALSE,message=FALSE}
+HumanNmdDna <- data.frame(transcripts = "Human NMD", DnaLength = DNAlengths$`NMD_Human`)
+HumanRiDna <- data.frame(transcripts = "Human RI", DnaLength = DNAlengths$`RI_Human`)
+MouseNmdDna <- data.frame(transcripts = "Mouse NMD", DnaLength = DNAlengths$`NMD_Mouse`)
+MouseRiDna <- data.frame(transcripts = "Mouse RI", DnaLength = DNAlengths$`RI_Mouse`)
+
+plot.dataDna <- rbind(HumanNmdDna,HumanRiDna,MouseNmdDna,MouseRiDna)
+
+my_comparisons <- list(c(1,2),c(1,3),c(1,4),c(2,3),c(2,4),c(3,4))
+
+print(ggplot(plot.dataDna, aes(x=transcripts, y=DnaLength, fill=transcripts)) + geom_boxplot() +  xlab("Originating transcripts") + ylab ("Orf Length (bp)")+ labs(fill = "Originating transcripts") + scale_x_discrete(labels= c("Human NMD","Human RI","Mouse NMD", "Mouse RI"))+geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + expand_limits(x = 0, y = 0) + ggtitle("Length distribution for unique DNA regions of NMD and RI Transcript in human and mouse")+ scale_y_continuous(trans='log10', breaks = c(0, 1, 10, 100, 1000, 10000, 100000, 1000000))+ stat_summary(fun=mean, colour="darkred", geom="text", show.legend = FALSE, vjust=-1, aes( label=round(..y.., digits=3)))+ stat_summary(fun=mean, colour="darkred", geom="point", shape=18, size=2,show.legend = FALSE)+stat_compare_means(comparisons = my_comparisons) + stat_compare_means(label.y = 1,label.x = 1)+scale_fill_jco())
+
+ggplot(plot.dataDna, aes(x=DnaLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of unique DNA regions of human split ORFs",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()
+
+ggplot(plot.dataDna, aes(x=DnaLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of unique DNA regions of human split ORFs (Logarithmic)",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()+ scale_x_continuous(trans='log10')
 ```
 
-## The followind plot shows the length distribution for the unique protein regions
+## The following plot shows the length distribution for the unique protein regions
 
-```{r OutputProtein, echo=FALSE, fig.height = 7, fig.width = 10}
-boxplot(Protlengths,ylab="length (aa)",outline = FALSE, main="Length of unique Protein Regions (aa)")
+```{r OutputProtein, echo=FALSE, fig.height = 7, fig.width = 10, warning=FALSE, message=FALSE}
+HumanNmdProt <- data.frame(transcripts = "Human NMD", ProtLength = Protlengths$`NMD_Human`)
+HumanRiProt <- data.frame(transcripts = "Human RI", ProtLength = Protlengths$`RI_Human`)
+MouseNmdProt <- data.frame(transcripts = "Mouse NMD", ProtLength = Protlengths$`NMD_Mouse`)
+MouseRiProt <- data.frame(transcripts = "Mouse RI", ProtLength = Protlengths$`RI_Mouse`)
+
+plot.dataProt <- rbind(HumanNmdProt,HumanRiProt,MouseNmdProt,MouseRiProt)
+
+my_comparisons <- list(c(1,2),c(1,3),c(1,4),c(2,3),c(2,4),c(3,4))
+
+print(ggplot(plot.dataProt, aes(x=transcripts, y=ProtLength, fill=transcripts)) + geom_boxplot() +  xlab("Originating transcripts") + ylab ("Orf Length (bp)")+ labs(fill = "Originating transcripts") + scale_x_discrete(labels= c("Human NMD","Human RI","Mouse NMD", "Mouse RI"))+geom_hline(yintercept = 0) + geom_vline(xintercept = 0) + expand_limits(x = 0, y = 0) + ggtitle("Length distribution for unique Protein regions of NMD and RI Transcript in human and mouse")+ scale_y_continuous(trans='log10', breaks = c(0, 1, 10, 100, 1000, 10000, 100000, 1000000))+ stat_summary(fun=mean, colour="darkred", geom="text", show.legend = FALSE, vjust=-1, aes( label=round(..y.., digits=3)))+ stat_summary(fun=mean, colour="darkred", geom="point", shape=18, size=2,show.legend = FALSE)+stat_compare_means(comparisons = my_comparisons) + stat_compare_means(label.y = 0.5,label.x = 1)+scale_fill_jco())
+
+ggplot(plot.dataProt, aes(x=ProtLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of unique protein regions of human split ORFs",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()
+
+ggplot(plot.dataProt, aes(x=ProtLength,fill=transcripts, color=transcripts)) + geom_histogram(position="identity",alpha=0.5, color="black") + theme(legend.position="top")+labs(title="Length of unique protein regions of human split ORFs (Logarithmic)",x="Orf length (bp)", y = "Frequency")+scale_fill_jco()+ scale_x_continuous(trans='log10')
 ```
 
 

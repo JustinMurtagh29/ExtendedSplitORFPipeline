@@ -1,4 +1,3 @@
-#This script selects the valid ORF DNA sequences of the transcripts according to the valid ORF proteins file
 import sys
 from Bio import SeqIO
 

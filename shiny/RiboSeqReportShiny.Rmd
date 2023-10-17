@@ -1,7 +1,7 @@
 ---
 title: "RiboSeq_Report"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 params:
     args: myarg
 ---
@@ -57,6 +57,7 @@ names(threshold)=names(randomnmddataframes)
 ```{r, echo=FALSE,results = 'asis'}
 setwd(params[[1]][[1]])
 #setwd("E:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/BOWTIE")
+#setwd("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD/BOWTIE")
 directoriesnonUnique<-list.dirs(path = ".", full.names = TRUE, recursive = TRUE)
 
 nonUniquenmdfiles=list()
@@ -89,6 +90,7 @@ print(kable(printbackgroundnonUnique, caption="Average relative counts of non-un
 ```{r, echo=FALSE,results='asis'}
 setwd(params[[1]][[1]])
 #setwd("E:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/BOWTIE")
+#setwd("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/NMD/BOWTIE")
 directories=list.dirs(path = ".", full.names = TRUE, recursive = TRUE)
 nmdfiles=list()
 setnames=list()
@@ -293,6 +295,7 @@ thresholdri=backgroundri
 ```{r, echo=FALSE,results = 'asis'}
 setwd(params[[1]][[2]])
 #setwd("E:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/Output/run_11.02.2021-13.21.38_new_NMD/BOWTIE")
+#setwd("G:/Justin_Backup_29.04.2020/Justin/Uni-Frankfurt/FP+Masterarbeit/PipeTest/Pipeline/shiny/splitORFdatabase/data/RI/BOWTIE")
 ridirectoriesnonUnique<-list.dirs(path = ".", full.names = TRUE, recursive = TRUE)
 
 nonUniquerifiles=list()

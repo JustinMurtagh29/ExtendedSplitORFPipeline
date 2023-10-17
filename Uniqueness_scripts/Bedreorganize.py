@@ -1,6 +1,3 @@
-#This script reorganizes the Unique_DNA_Regions.bed file as the ORF IDs and positions can not be used when comparing with the alignment of
-#the Ribo-Seq reads to the transcripts
-#The ORF-ID:Start:End is extracted from the first column and added as fourth column
 import sys
 uniquefile = open(sys.argv[1],'r')
 uniquelist=[]

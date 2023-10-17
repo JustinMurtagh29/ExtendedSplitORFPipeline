@@ -20,10 +20,13 @@ with open(sys.argv[3], "w") as out:
             if int(columns[1])-int(previous[2]) <= gap:
                 previous[2]=columns[2]
             else:
-                out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
+                if (int(previous[2])-int(previous[1]) >= gap):
+                    out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
                 previous = columns
         else:
             if (previous[0]!=""):
-                out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
+                if (int(previous[2])-int(previous[1]) >= gap):
+                    out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
             previous=columns
-    out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")
+    if (int(previous[2])-int(previous[1]) >= gap):
+        out.write(previous[0] + "\t" + previous[1] + "\t" + previous[2] + "\n")

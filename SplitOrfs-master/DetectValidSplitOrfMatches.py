@@ -32,6 +32,7 @@ def checkAlignments(Alignments,gene, target) :
                             pAlignPos = []
                             totalAlignLength=0
                             for i in range(0,len(entries)) :    
+                                #print("**",entries)
                                 orfIDs.append(entries[i].split(":")[0])
                                 orfPos.append("-".join([entries[i].split(":")[1],entries[i].split(":")[2]]))
                                 currentSeqIdent=float(entries[i].split(":")[3])
@@ -62,33 +63,76 @@ else :
         for line in file :
             elems = line.split("\t")
             orf=re.split("[|:]+",elems[0])
+            
+            #print(lastElem + "***" + elems[1])
             if lastElem != elems[1] :
                 #found a new target transcript
                 #go through all transcripts that have matches to the target
                 target=lastElem.split("|")
+                #print(Alignments,target[0],target[1])
                 checkAlignments(Alignments,target[0],target[1])
                 lastElem = elems[1]
                 Alignments={}
                 target=(elems[1]).split("|")
 
+            #print(orf)
             orflength=orf[5].split("-")
+            #orflength=orf[6].split("-")
             blastOrfLength=int(orflength[1])-int(orflength[0]) + 2
             orfLenNuc=int(orf[4]) - int(orf[3])+1
             orfLenProt=orfLenNuc/float(3)
             alignLength=float(int(elems[9])-int(elems[8])+1)
+            #print(elems[2] + " >= " + str(identityCutoff))
+            #print(str(orfLenProt) + " >= " + str(minLength))
+            #print(orf[0] + " == " + target[0])
+            #print(str(alignLength/blastOrfLength) + " >= " + str(minAlignmentRate))
 
             if (float(elems[2]) >= identityCutoff) and (orfLenProt >= minLength) and (orf[0] == target[0]) and ((alignLength/blastOrfLength) >= minAlignmentRate):
+                #dummy=orf[2:5]
+                #print("++",orf)
+                #dummy=orf[2:5]
+                #print("--",dummy)
+                #dummy.append(orf[6])
+                #dummy.append(str(elems[2]))
+                #dummy.append(str(int(alignLength)))
+                #dummy.append("-".join([elems[8],elems[9]]))
+                #print(orf[1])
+                ##### Added Check for ORF Frame #####
+                #orfFrame=orf[1]+":"+orf[5]
+                #if(orfFrame in Alignments) :  #transcript has at least one matching orf for the given Frame
+                #    entries = Alignments[orfFrame]
+                #    for i in range(0,len(entries)) :
+                #        #print("***", orf[2],"---",entries[i].split(":")[0])
+                #        ##### Only the longest Alignment of an ORF against a Transcript is used #####
+                #        if (orf[2] != entries[i].split(":")[0]):
+                #            Alignments[orfFrame].append(colon.join(dummy))
+                #        elif (alignLength > int(entries[i].split(":")[4])):
+                #            Alignments[orfFrame][i]=colon.join(dummy)
+                #else :
+                #    Alignments[orfFrame] = [colon.join(dummy)]
                 dummy=orf[2:5]
                 dummy.append(str(elems[2]))
                 dummy.append(str(int(alignLength)))
                 dummy.append("-".join([elems[8],elems[9]]))
                 if(orf[1] in Alignments) :  #transcript has at least one matching orf
-                    Alignments[orf[1]].append(colon.join(dummy))
+                    entries = Alignments[orf[1]]
+                    #print(entries)
+                    add = True
+                    for i in range(0,len(entries)) :
+                        #print("*****" + str(orf[2]) + "+++++"+ entries[i].split(":")[0])
+                        if (orf[2] == entries[i].split(":")[0]):
+                            add = False
+                            if (int(alignLength) > int(entries[i].split(":")[4])): #Only the longest Alignment of an ORF against a Transcript is used
+                                Alignments[orf[1]][i]=colon.join(dummy)
+                    if add:
+                        Alignments[orf[1]].append(colon.join(dummy))
                 else :
                     Alignments[orf[1]] = [colon.join(dummy)]
+                    #print(Alignments)
 
             target=elems[1].split("|")
 	#output the last transcript
+        #print(Alignments,target[0],target[1])
         checkAlignments(Alignments,target[0],target[1])
 
 

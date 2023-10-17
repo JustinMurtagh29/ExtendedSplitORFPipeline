@@ -59,10 +59,10 @@ def codons(seq,id,countOrfs):
                                 #translate orf sequence
                                 prot=translate(seq[lst1[frame][currentStart]:lst2[frame][currentStop]])
                                 if len(prot) >= minOrfLength :
-                                        print ''.join([id,":ORF-",str(countOrfs),":",str(lst1[frame][currentStart]+1),":",str(lst2[frame][currentStop]+3)])
+                                        ##### added Frame to ID #####
+                                        print ''.join([id,":ORF-",str(countOrfs),":",str(lst1[frame][currentStart]),":",str(lst2[frame][currentStop]+3)])
                                         print prot
                                         countOrfs=countOrfs+1
-                                #lastStop=lst2[frame][currentStop]
                                 #remove all other start codons that are nested between the current start and stop
                                 while currentStart < len(lst1[frame]) and lst1[frame][currentStart] < lst2[frame][currentStop]:
                                         currentStart=currentStart+1
