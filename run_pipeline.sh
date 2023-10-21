@@ -168,7 +168,7 @@ python ./SplitOrfs-master/addFunctionalOverlap.py $output/UniqueProteinORFPairs.
 # ----- create a report displaying the results of the original pipeline steps ----- #
 echo "Create split-Orf report"
 #R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('/Output/run_$timestamp/ValidProteinORFPairs.txt','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt')))"
-R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('$transcripts','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt')))"
+R -e "rmarkdown::render('Split-ORF_Report.Rmd',output_file='./Output/run_$timestamp/Split-ORF_Report.html',params=list(args = c('/Output/run_$timestamp/ValidProteinORFPairs_sortCol3.txt','/Output/run_$timestamp/UniqueProteinORFPairs_annotated.txt','$transcripts')))"
 
 # ----- activate py3_7 environment in order to execute Select_SplitORF_Sequences.py and Find_Unique_Regions.py ----- #
 # ----- --> Dependency BioSeqIO which needs python3 ----- #
